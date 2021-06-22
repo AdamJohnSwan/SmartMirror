@@ -1,0 +1,14 @@
+{
+    "cityid": 0,
+    "openweatherkey": "",
+    "modules": {
+        "clock": true,
+        "currentweather": true,
+        "dayweather": true,
+        "calendar": true,
+        "holidays": true,
+        "alarm": true,
+        "voice": true
+    },
+    "screentimeout": 45
+}

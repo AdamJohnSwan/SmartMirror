@@ -1,0 +1,29 @@
+* {
+	color: white;
+	font-family: sans-serif;
+}
+
+.window {
+	background-color: black;
+}
+
+.clock {
+	font-size: 8em;
+}
+
+.weekday {
+	font-size: 2em;
+}
+
+.date {
+	font-size: 2.4em;
+}
+
+.weather-text {
+	font-size: 2.4em;
+	padding: 10px 0px;
+}
+
+.small-text {
+	font-size: 1.5em;
+}
