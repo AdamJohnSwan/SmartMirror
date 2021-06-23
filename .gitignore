@@ -139,6 +139,7 @@ cython_debug/
 
 
 *models.pbmm
+*models.tflite
 *models.scorer
 
 settings.json

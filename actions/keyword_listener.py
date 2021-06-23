@@ -17,7 +17,7 @@ class KeywordListener(Thread):
 
         self._library_path = LIBRARY_PATH
         self._model_path = MODEL_PATH
-        self._keyword_paths = [KEYWORD_PATHS["smart mirror"]]
+        self._keyword_paths = [KEYWORD_PATHS["americano"]]
         self._sensitivities = [0.5]
         self.listening = True
         self.listener_icon = builder.get_object("listener-icon")
@@ -27,7 +27,7 @@ class KeywordListener(Thread):
         self.keyword_callback = keyword_callback
         self.wake_screen = wake_screen
 
-        model_name = glob.glob(os.path.join('*.pbmm'))[0]
+        model_name = glob.glob(os.path.join('*.tflite'))[0]
         self.model = deepspeech.Model(model_name)
 
         self.porcupine = None
@@ -63,6 +63,7 @@ class KeywordListener(Thread):
                     vad_audio.destroy()
                     return 1
                 stream_context = self.model.createStream()
+        vad_audio.destroy()
         return 1
 
     def set_listening(self, shouldListen):

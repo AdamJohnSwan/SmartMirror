@@ -2,7 +2,6 @@ certifi==2021.5.30
 cffi==1.14.5
 chardet==4.0.0
 deepspeech==0.9.3
-deepspeech-tflite==0.9.3
 enum34==1.1.10
 idna==2.10
 numpy==1.21.0
