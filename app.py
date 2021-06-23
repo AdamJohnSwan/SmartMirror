@@ -2,6 +2,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 import time
 import datetime
+import multiprocessing
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -19,7 +20,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -29,6 +30,7 @@ class SmartMirror:
 
 		self.wrapper = builder.get_object("wrapper")
 		self.is_awake = True
+		self.is_running = True
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
@@ -38,12 +40,23 @@ class SmartMirror:
 
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
-			self.keyword_listener.start()
-		Gtk.main()
+			p = multiprocessing.Process(target=self.keyword_listener.run)
+			p.start()
+		self.main()
+
+	def main(self):
+		i = 0
+		while self.is_running:
+			try:
+				print("iter: " + str(i))
+				Gtk.main_iteration_do(True)
+				i += 1
+			except KeyboardInterrupt:
+				self.destroy()
 
 	def destroy(self, window):
 		self.keyword_listener.end_listener()
-		Gtk.main_quit()
+		self.is_running = False
 
 	def keyword_callback(self, text):
 		print(text)

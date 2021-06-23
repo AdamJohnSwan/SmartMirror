@@ -1,7 +1,6 @@
 import os
 import glob
 import struct
-from threading import Thread
 
 import deepspeech
 from audio_tools import VADAudio
@@ -10,7 +9,7 @@ import pyaudio
 
 from pvporcupine import *
 
-class KeywordListener(Thread):
+class KeywordListener():
 
     def __init__(self, builder, keyword_callback, wake_screen):
         super(KeywordListener, self).__init__()
