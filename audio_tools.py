@@ -16,13 +16,7 @@ class Audio(object):
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
 
-    def __init__(self, input_rate=RATE_PROCESS):
-        def proxy_callback(in_data, frame_count, time_info, status):
-            #pylint: disable=unused-argument
-            if self.chunk is not None:
-                in_data = self.wf.readframes(self.chunk)
-            callback(in_data)
-            return (None, pyaudio.paContinue)
+    def __init__(self):
         self.input_rate = self.RATE_PROCESS
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
@@ -77,8 +71,8 @@ class Audio(object):
 class VADAudio(Audio):
     """Filter & segment audio with voice activity detection."""
 
-    def __init__(self, aggressiveness=3, input_rate=None):
-        super().__init__(input_rate=input_rate)
+    def __init__(self, aggressiveness=3):
+        super().__init__()
         self.vad = webrtcvad.Vad(aggressiveness)
 
     def frame_generator(self):

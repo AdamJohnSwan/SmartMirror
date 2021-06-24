@@ -20,7 +20,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -36,28 +36,18 @@ class SmartMirror:
 		self.clock = Clock(builder)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
-
-		GLib.timeout_add_seconds(10, self.wake_screen)
-		GLib.timeout_add_seconds(5, self.sleep_screen)
-		GLib.timeout_add_seconds(20, self.wake_screen)
-		GLib.timeout_add_seconds(15, self.sleep_screen)
-		GLib.timeout_add_seconds(30, self.wake_screen)
-		GLib.timeout_add_seconds(25, self.sleep_screen)
-		GLib.timeout_add_seconds(40, self.wake_screen)
-		GLib.timeout_add_seconds(35, self.sleep_screen)
-		GLib.timeout_add_seconds(50, self.wake_screen)
-		GLib.timeout_add_seconds(45, self.sleep_screen)
 		
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
 			self.keyword_listener.start()
 		#Gtk.main()
-		while True:
+		self.running = True
+		while self.running:
 			Gtk.main_iteration_do(False)
 
 	def destroy(self, window):
 		self.keyword_listener.end_listener()
-		Gtk.main_quit()
+		self.running = False
 
 	def keyword_callback(self, text):
 		print(text)

@@ -27,7 +27,7 @@ class KeywordListener(Thread):
         self.keyword_callback = keyword_callback
         self.wake_screen = wake_screen
 
-        model_name = glob.glob(os.path.join('*.tflite'))[0]
+        model_name = glob.glob(os.path.join('*.pbmm'))[0]
         self.model = deepspeech.Model(model_name)
 
         self.porcupine = None
@@ -58,7 +58,6 @@ class KeywordListener(Thread):
                 keep_listening = self.keyword_callback(text)
                 if keep_listening is not True:
                     vad_audio.destroy()
-                    stream_context.freeStream()
                     return 1
                 stream_context = self.model.createStream()
         vad_audio.destroy()
