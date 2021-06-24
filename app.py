@@ -1,4 +1,5 @@
 import gi
+from pvporcupine import LIBRARY_PATH
 gi.require_version("Gtk", "3.0")
 import time
 import datetime
@@ -19,7 +20,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -39,7 +40,9 @@ class SmartMirror:
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
 			self.keyword_listener.start()
-		Gtk.main()
+		#Gtk.main()
+		while True:
+			Gtk.main_iteration_do(False)
 
 	def destroy(self, window):
 		self.keyword_listener.end_listener()
@@ -62,26 +65,16 @@ class SmartMirror:
 		if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
 			self.sleep_screen()
 		else:
-			GLib.timeout_add_seconds(10, self.sleep_timer_check)
+			GLib.timeout_add_seconds(20, self.sleep_timer_check)
 
 	def wake_screen(self):
-		if(self.wrapper.get_opacity() < 1.0):
-			opacity = 0
-			while (opacity < 1):
-				self.wrapper.set_opacity(opacity)
-				time.sleep(0.1)
-				opacity += 0.1
+		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
 		self.is_awake = True
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
 	def sleep_screen(self):
-		if(self.wrapper.get_opacity() > 0):
-			opacity = 1
-			while (opacity > 0):
-				self.wrapper.set_opacity(opacity)
-				time.sleep(0.1)
-				opacity -= 0.1
+		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 0)
 		self.is_awake = False
 
 if __name__ == '__main__':
