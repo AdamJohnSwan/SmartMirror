@@ -23,7 +23,7 @@ class Audio(object):
                 in_data = self.wf.readframes(self.chunk)
             callback(in_data)
             return (None, pyaudio.paContinue)
-        self.input_rate = input_rate
+        self.input_rate = self.RATE_PROCESS
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
         self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
@@ -77,8 +77,8 @@ class Audio(object):
 class VADAudio(Audio):
     """Filter & segment audio with voice activity detection."""
 
-    def __init__(self, aggressiveness=3, device=None, input_rate=None, file=None):
-        super().__init__(device=device, input_rate=input_rate, file=file)
+    def __init__(self, aggressiveness=3, input_rate=None):
+        super().__init__(input_rate=input_rate)
         self.vad = webrtcvad.Vad(aggressiveness)
 
     def frame_generator(self):

@@ -27,7 +27,7 @@ class KeywordListener(Thread):
         self.keyword_callback = keyword_callback
         self.wake_screen = wake_screen
 
-        model_name = glob.glob(os.path.join('*.pbmm'))[0]
+        model_name = glob.glob(os.path.join('*.tflite'))[0]
         self.model = deepspeech.Model(model_name)
 
         self.porcupine = None
@@ -42,10 +42,7 @@ class KeywordListener(Thread):
 
     def transcribe(self):
         # Start audio with VAD
-        vad_audio = VADAudio(aggressiveness=1,
-                             device=None,
-                             input_rate=16000,
-                             file=None)
+        vad_audio = VADAudio(aggressiveness=1)
         print("Listening (ctrl-C to exit)...")
         self.toggle_listener_icon()
         self.wake_screen()
