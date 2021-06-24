@@ -1,4 +1,5 @@
 import gi
+from pvporcupine import LIBRARY_PATH
 gi.require_version("Gtk", "3.0")
 import time
 import datetime
@@ -37,26 +38,18 @@ class SmartMirror:
 		self.clock = Clock(builder)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
-
+		
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
-			p = multiprocessing.Process(target=self.keyword_listener.run)
-			p.start()
-		self.main()
-
-	def main(self):
-		i = 0
-		while self.is_running:
-			try:
-				print("iter: " + str(i))
-				Gtk.main_iteration_do(True)
-				i += 1
-			except KeyboardInterrupt:
-				self.destroy()
+			self.keyword_listener.start()
+		#Gtk.main()
+		self.running = True
+		while self.running:
+			Gtk.main_iteration_do(False)
 
 	def destroy(self, window):
 		self.keyword_listener.end_listener()
-		self.is_running = False
+		self.running = False
 
 	def keyword_callback(self, text):
 		print(text)
@@ -75,26 +68,16 @@ class SmartMirror:
 		if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
 			self.sleep_screen()
 		else:
-			GLib.timeout_add_seconds(10, self.sleep_timer_check)
+			GLib.timeout_add_seconds(20, self.sleep_timer_check)
 
 	def wake_screen(self):
-		if(self.wrapper.get_opacity() < 1.0):
-			opacity = 0
-			while (opacity < 1):
-				self.wrapper.set_opacity(opacity)
-				time.sleep(0.1)
-				opacity += 0.1
+		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
 		self.is_awake = True
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
 	def sleep_screen(self):
-		if(self.wrapper.get_opacity() > 0):
-			opacity = 1
-			while (opacity > 0):
-				self.wrapper.set_opacity(opacity)
-				time.sleep(0.1)
-				opacity -= 0.1
+		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 0)
 		self.is_awake = False
 
 if __name__ == '__main__':

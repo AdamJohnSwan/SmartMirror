@@ -16,17 +16,8 @@ class Audio(object):
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
 
-    def __init__(self, callback=None, device=None, input_rate=RATE_PROCESS, file=None):
-        def proxy_callback(in_data, frame_count, time_info, status):
-            #pylint: disable=unused-argument
-            if self.chunk is not None:
-                in_data = self.wf.readframes(self.chunk)
-            callback(in_data)
-            return (None, pyaudio.paContinue)
-        if callback is None: callback = lambda in_data: self.buffer_queue.put(in_data)
-        self.buffer_queue = queue.Queue()
-        self.device = device
-        self.input_rate = input_rate
+    def __init__(self):
+        self.input_rate = self.RATE_PROCESS
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
         self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
@@ -38,16 +29,9 @@ class Audio(object):
             'rate': self.input_rate,
             'input': True,
             'frames_per_buffer': self.block_size_input,
-            'stream_callback': proxy_callback,
         }
 
         self.chunk = None
-        # if not default device
-        if self.device:
-            kwargs['input_device_index'] = self.device
-        elif file is not None:
-            self.chunk = 320
-            self.wf = wave.open(file, 'rb')
 
         self.stream = self.pa.open(**kwargs)
         self.stream.start_stream()
@@ -69,12 +53,12 @@ class Audio(object):
 
     def read_resampled(self):
         """Return a block of audio data resampled to 16000hz, blocking if necessary."""
-        return self.resample(data=self.buffer_queue.get(),
+        return self.resample(data=self.stream.read(self.block_size_input),
                              input_rate=self.input_rate)
 
     def read(self):
         """Return a block of audio data, blocking if necessary."""
-        return self.buffer_queue.get()
+        return self.stream.read(self.block_size_input)
 
     def destroy(self):
         self.stream.stop_stream()
@@ -87,8 +71,8 @@ class Audio(object):
 class VADAudio(Audio):
     """Filter & segment audio with voice activity detection."""
 
-    def __init__(self, aggressiveness=3, device=None, input_rate=None, file=None):
-        super().__init__(device=device, input_rate=input_rate, file=file)
+    def __init__(self, aggressiveness=3):
+        super().__init__()
         self.vad = webrtcvad.Vad(aggressiveness)
 
     def frame_generator(self):
