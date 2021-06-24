@@ -6,10 +6,13 @@ import deepspeech
 from audio_tools import VADAudio
 import numpy as np
 import pyaudio
+from gi.repository import Gdk
+from gi.repository import GLib
+from threading import Thread
 
 from pvporcupine import *
 
-class KeywordListener():
+class KeywordListener(Thread):
 
     def __init__(self, builder, keyword_callback, wake_screen):
         super(KeywordListener, self).__init__()
@@ -53,7 +56,7 @@ class KeywordListener():
                 stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
             else:
                 text = stream_context.finishStream()
-                self.listener_words.set_text(text)
+                Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, text)
                 keep_listening = self.keyword_callback(text)
                 if keep_listening is not True:
                     vad_audio.destroy()
@@ -69,12 +72,12 @@ class KeywordListener():
     def toggle_listener_icon(self):
         is_visible = self.listener_icon.get_visible()
         if is_visible:
-            self.listener_words.set_text("")
-            self.listener_words.hide()
-            self.listener_icon.hide()
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, "")
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
         else:
-            self.listener_words.show()
-            self.listener_icon.show()
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.show)
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.show)
         
 
     def run(self):
