@@ -95,10 +95,10 @@ class VADAudio(Audio):
         """Generator that yields all audio frames from microphone."""
         time_checker = datetime.datetime.now()
         if self.input_rate == self.RATE_PROCESS:
-            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=10):
+            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=20):
                 yield self.read()
         else:
-            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=10):
+            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=20):
                 yield self.read_resampled()
 
     def vad_collector(self, padding_ms=300, ratio=0.75, frames=None):

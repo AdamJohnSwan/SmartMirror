@@ -3,6 +3,7 @@ gi.require_version("Gtk", "3.0")
 import time
 import datetime
 import multiprocessing
+import queue
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -12,7 +13,6 @@ from actions.clock import Clock
 from actions.weather import Weather
 from actions.calendar import Calendar
 from actions.keyword_listener import KeywordListener
-from actions.speech import say
 
 class SmartMirror:
 	def __init__(self):
@@ -38,44 +38,66 @@ class SmartMirror:
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
 
-		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
-		if(self.settings["modules"]["voice"]):
-			p = multiprocessing.Process(target=self.keyword_listener.run)
-			p.start()
-		self.main()
+		self.listener_icon = builder.get_object("listener-icon")
+		self.listener_words = builder.get_object("listener-words")
+		self.listener_icon.hide()
+		self.listener_words.hide()
 
-	def main(self):
+		self.keyword_listener = KeywordListener()
+		self.tasks = multiprocessing.Queue()
+		self.p = None
+		self.p = multiprocessing.Process(target=self.main, args=(self.tasks, ))
+		self.p.start()
+		if(self.settings["modules"]["voice"]):
+			self.keyword_listener.run(self.tasks)
+
+
+	def main(self, tasks):
 		i = 0
 		while self.is_running:
+			print("iter: " + str(i))
 			try:
-				print("iter: " + str(i))
+				try:
+					task = tasks.get_nowait()
+					method = getattr(self, task["task"])
+					if("args" in task):
+						args = task["args"]
+						method(args)
+					else:
+						method()
+				except queue.Empty:
+					pass
+				except AttributeError:
+					print("task contains method that does not exist")
 				Gtk.main_iteration_do(True)
 				i += 1
 			except KeyboardInterrupt:
 				self.destroy()
 
-	def destroy(self, window):
-		self.keyword_listener.end_listener()
+	def destroy(self, window = None):
+		if(self.p != None):
+			self.keyword_listener.end_listener()
+			self.p.join()
 		self.is_running = False
-
-	def keyword_callback(self, text):
-		print(text)
-		if("wake" in text):
-			self.wake_screen()
-		elif("sleep" in text):
-			self.sleep_screen()
-		elif("time" in text):
-			say(datetime.datetime.now().strftime("%-I:%-M%p"))
-		elif("stop recording" in text):
-			pass
-		else:
-			return True
 	
 	def sleep_timer_check(self):
 		if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
 			self.sleep_screen()
 		else:
 			GLib.timeout_add_seconds(10, self.sleep_timer_check)
+
+	def set_listener_text(self, text):
+		self.listener_words.set_text(text)
+
+	def toggle_listener_icon(self):
+		is_visible = self.listener_icon.get_visible()
+		if is_visible:
+			self.listener_words.set_text("")
+			self.listener_words.hide()
+			self.listener_icon.hide()
+		else:
+			self.listener_words.show()
+			self.listener_icon.show()
 
 	def wake_screen(self):
 		if(self.wrapper.get_opacity() < 1.0):

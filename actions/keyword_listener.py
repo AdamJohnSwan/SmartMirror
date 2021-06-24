@@ -2,31 +2,27 @@ import os
 import glob
 import struct
 
+import multiprocessing
 import deepspeech
 from audio_tools import VADAudio
 import numpy as np
 import pyaudio
 
 from pvporcupine import *
+from actions.speech import say, say_time
 
 class KeywordListener():
 
-    def __init__(self, builder, keyword_callback, wake_screen):
-        super(KeywordListener, self).__init__()
+    def __init__(self):
 
         self._library_path = LIBRARY_PATH
         self._model_path = MODEL_PATH
         self._keyword_paths = [KEYWORD_PATHS["americano"]]
         self._sensitivities = [0.5]
         self.listening = True
-        self.listener_icon = builder.get_object("listener-icon")
-        self.listener_words = builder.get_object("listener-words")
-        self.listener_icon.hide()
-        self.listener_words.hide()
-        self.keyword_callback = keyword_callback
-        self.wake_screen = wake_screen
+        self.tasks = None
 
-        model_name = glob.glob(os.path.join('*.tflite'))[0]
+        model_name = glob.glob(os.path.join('*.pbmm'))[0]
         self.model = deepspeech.Model(model_name)
 
         self.porcupine = None
@@ -46,8 +42,8 @@ class KeywordListener():
                              input_rate=16000,
                              file=None)
         print("Listening (ctrl-C to exit)...")
-        self.toggle_listener_icon()
-        self.wake_screen()
+        self.tasks.put({"task":"toggle_listener_icon"})
+        self.tasks.put({"task":"wake_screen"})
         frames = vad_audio.vad_collector()
         # Stream from microphone to DeepSpeech using VAD
         stream_context = self.model.createStream()
@@ -56,30 +52,33 @@ class KeywordListener():
                 stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
             else:
                 text = stream_context.finishStream()
-                self.listener_words.set_text(text)
-                keep_listening = self.keyword_callback(text)
+                print(text)
+                self.tasks.put({"task": "set_listener_text", "args": text})
+                keep_listening = self.check_keyword(text)
                 if keep_listening is not True:
                     vad_audio.destroy()
                     return 1
-                stream_context = self.model.createStream()
+                stream_context = self.model.createStream()        
         vad_audio.destroy()
         return 1
+
+    def check_keyword(self, text):
+        if("wake" in text):
+            self.tasks.put({"task": "wake_screen"})
+        elif("sleep" in text):
+            self.tasks.put({"task": "sleep_screen"})
+        elif("time" in text):
+            say_time()
+        elif("stop recording" in text):
+            pass
+        else:
+            return True
 
     def set_listening(self, shouldListen):
         self.listening = shouldListen
 
-    def toggle_listener_icon(self):
-        is_visible = self.listener_icon.get_visible()
-        if is_visible:
-            self.listener_words.set_text("")
-            self.listener_words.hide()
-            self.listener_icon.hide()
-        else:
-            self.listener_words.show()
-            self.listener_icon.show()
-        
-
-    def run(self):
+    def run(self, tasks):
+        self.tasks = tasks
         self.porcupine = Porcupine(
             library_path=self._library_path,
             model_path=self._model_path,
@@ -108,7 +107,7 @@ class KeywordListener():
                 self.audio_stream.close()
                 res = self.transcribe()                   
                 if res:
-                    self.toggle_listener_icon()
+                    self.tasks.put({"task":"toggle_listener_icon"})
                     self.audio_stream = get_audio_stream()
         
         self.end_listener()
