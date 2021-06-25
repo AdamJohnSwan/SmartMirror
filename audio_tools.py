@@ -1,9 +1,8 @@
-import collections, queue
-
 import datetime
+import collections, queue, os, os.path
+
 import numpy as np
 import pyaudio
-import wave
 import webrtcvad
 from scipy import signal
 
@@ -16,8 +15,17 @@ class Audio(object):
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
 
-    def __init__(self):
-        self.input_rate = self.RATE_PROCESS
+    def __init__(self, input_rate=RATE_PROCESS):
+        def proxy_callback(in_data, frame_count, time_info, status):
+            #pylint: disable=unused-argument
+            if self.chunk is not None:
+                in_data = self.wf.readframes(self.chunk)
+            callback(in_data)
+            return (None, pyaudio.paContinue)
+        callback = lambda in_data: self.buffer_queue.put(in_data)
+        self.buffer_queue = queue.Queue()
+        print(input_rate)
+        self.input_rate = input_rate
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
         self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
@@ -29,6 +37,7 @@ class Audio(object):
             'rate': self.input_rate,
             'input': True,
             'frames_per_buffer': self.block_size_input,
+            'stream_callback': proxy_callback,
         }
 
         self.chunk = None
@@ -36,14 +45,11 @@ class Audio(object):
         self.stream = self.pa.open(**kwargs)
         self.stream.start_stream()
 
-    def resample(self, data, input_rate):
+    def resample(self, data):
         """
         Microphone may not support our native processing sampling rate, so
         resample from input_rate to RATE_PROCESS here for webrtcvad and
         deepspeech
-        Args:
-            data (binary): Input audio stream
-            input_rate (int): Input audio rate to resample from
         """
         data16 = np.fromstring(string=data, dtype=np.int16)
         resample_size = int(len(data16) / self.input_rate * self.RATE_PROCESS)
@@ -53,12 +59,11 @@ class Audio(object):
 
     def read_resampled(self):
         """Return a block of audio data resampled to 16000hz, blocking if necessary."""
-        return self.resample(data=self.stream.read(self.block_size_input),
-                             input_rate=self.input_rate)
+        return self.resample(data=self.buffer_queue.get())
 
     def read(self):
         """Return a block of audio data, blocking if necessary."""
-        return self.stream.read(self.block_size_input)
+        return self.buffer_queue.get()
 
     def destroy(self):
         self.stream.stop_stream()
@@ -66,7 +71,6 @@ class Audio(object):
         self.pa.terminate()
 
     frame_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate)
-
 
 class VADAudio(Audio):
     """Filter & segment audio with voice activity detection."""
@@ -79,10 +83,10 @@ class VADAudio(Audio):
         """Generator that yields all audio frames from microphone."""
         time_checker = datetime.datetime.now()
         if self.input_rate == self.RATE_PROCESS:
-            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=10):
+            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=20):
                 yield self.read()
         else:
-            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=10):
+            while datetime.datetime.now() < time_checker + datetime.timedelta(seconds=20):
                 yield self.read_resampled()
 
     def vad_collector(self, padding_ms=300, ratio=0.75, frames=None):
@@ -91,14 +95,15 @@ class VADAudio(Audio):
             Example: (frame, ..., frame, None, frame, ..., frame, None, ...)
                       |---utterence---|        |---utterence---|
         """
-        if frames is None:
-            frames = self.frame_generator()
+        if frames is None: frames = self.frame_generator()
         num_padding_frames = padding_ms // self.frame_duration_ms
         ring_buffer = collections.deque(maxlen=num_padding_frames)
         triggered = False
+
         for frame in frames:
             if len(frame) < 640:
                 return
+
             is_speech = self.vad.is_speech(frame, self.sample_rate)
 
             if not triggered:

@@ -18,7 +18,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")

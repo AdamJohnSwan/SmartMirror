@@ -24,8 +24,8 @@ class KeywordListener(Thread):
         self.listening = True
         self.listener_icon = builder.get_object("listener-icon")
         self.listener_words = builder.get_object("listener-words")
-        self.listener_icon.hide()
-        self.listener_words.hide()
+        Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
+        Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
         self.keyword_callback = keyword_callback
         self.wake_screen = wake_screen
 
