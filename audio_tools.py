@@ -24,7 +24,6 @@ class Audio(object):
             return (None, pyaudio.paContinue)
         callback = lambda in_data: self.buffer_queue.put(in_data)
         self.buffer_queue = queue.Queue()
-        print(input_rate)
         self.input_rate = input_rate
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))

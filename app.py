@@ -18,7 +18,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		#window.fullscreen()
+		window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -47,9 +47,12 @@ class SmartMirror:
 		#Gtk.main()
 		self.running = True
 		while self.running:
-			Gtk.main_iteration_do(False)
+			try:
+				Gtk.main_iteration_do(False)
+			except KeyboardInterrupt:
+				self.destroy()
 
-	def destroy(self, window):
+	def destroy(self, window=None):
 		self.keyword_listener.end_listener()
 		self.running = False
 

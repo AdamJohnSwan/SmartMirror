@@ -42,12 +42,12 @@ class KeywordListener(Thread):
             scorer_name = glob.glob(os.path.join('*.scorer'))[0]
             self.model.enableExternalScorer(scorer_name)
         except Exception as e:
-            print(e)        
+            print(e)  
 
     def transcribe(self):
         # Start audio with VAD
         vad_audio = VADAudio(aggressiveness=1)
-        print("Listening (ctrl-C to exit)...")
+        print("Listening...")
         self.toggle_listener_icon()
         self.wake_screen()
         frames = vad_audio.vad_collector()
