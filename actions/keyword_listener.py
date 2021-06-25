@@ -29,7 +29,9 @@ class KeywordListener(Thread):
         self.keyword_callback = keyword_callback
         self.wake_screen = wake_screen
 
-        model_name = glob.glob(os.path.join('*.pbmm'))[0]
+        pbmm_model_name = glob.glob(os.path.join('*.pbmm'))
+        tflite_model_name = glob.glob(os.path.join('*.tflite'))
+        model_name = (pbmm_model_name + tflite_model_name)[0]
         self.model = deepspeech.Model(model_name)
 
         self.porcupine = None

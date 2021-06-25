@@ -1,9 +1,7 @@
 import gi
 from pvporcupine import LIBRARY_PATH
 gi.require_version("Gtk", "3.0")
-import time
 import datetime
-import multiprocessing
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -14,20 +12,24 @@ from actions.weather import Weather
 from actions.calendar import Calendar
 from actions.keyword_listener import KeywordListener
 from actions.speech import say
-
 class SmartMirror:
 	def __init__(self):
 		self.settings = get_settings()
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		#window.fullscreen()
+		window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
 		provider.load_from_file(csspath)
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		window.show_all()
+
+		#Hide the cursor
+		display = Gdk.Display.get_default()
+		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.wrapper = builder.get_object("wrapper")
 		self.is_awake = True
