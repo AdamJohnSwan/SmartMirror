@@ -1,4 +1,5 @@
-sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-3.0 python3-pyaudio portaudio19-dev libatlas-base-dev espeak-ng
+sudo apt install build-essential python-dev
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0 python3-pyaudio portaudio19-dev libatlas-base-dev espeak-ng libcec-dev
 if [ -e deepspeech-0.9.*-models.tflite ]
 then
     echo "Models are already present"

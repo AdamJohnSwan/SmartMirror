@@ -101,7 +101,7 @@ class KeywordListener(Thread):
         
         self.audio_stream = get_audio_stream()
         while self.listening:
-            pcm = self.audio_stream.read(self.porcupine.frame_length)
+            pcm = self.audio_stream.read(self.porcupine.frame_length, exception_on_overflow = False)
 
             pcm = struct.unpack_from("h" * self.porcupine.frame_length, pcm)
 
@@ -109,7 +109,7 @@ class KeywordListener(Thread):
             if result >= 0:
                 print('Detected keyword')
                 self.audio_stream.close()
-                res = self.transcribe()                   
+                res = self.transcribe()
                 if res:
                     self.toggle_listener_icon()
                     self.audio_stream = get_audio_stream()
