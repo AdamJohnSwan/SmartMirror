@@ -31,6 +31,8 @@ class SmartMirror:
 		try:
 			cec.init()
 			self.tv = cec.Device(cec.CECDEVICE_TV)
+			self.tv.power_on()
+
 		except Exception as e:
 			print("Device does not support CEC: " + str(e))
 
