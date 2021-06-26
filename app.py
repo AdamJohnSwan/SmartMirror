@@ -1,6 +1,5 @@
 import gi
 import cec
-import beepy
 gi.require_version("Gtk", "3.0")
 import datetime
 from gi.repository import Gtk
