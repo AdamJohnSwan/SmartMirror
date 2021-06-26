@@ -1,5 +1,6 @@
 import gi
-from pvporcupine import LIBRARY_PATH
+import cec
+import beepy
 gi.require_version("Gtk", "3.0")
 import datetime
 from gi.repository import Gtk
@@ -26,6 +27,14 @@ class SmartMirror:
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		window.show_all()
 
+		#Controls for the tv
+		self.tv = None
+		try:
+			cec.init()
+			self.tv = cec.Device(cec.CECDEVICE_TV)
+		except Exception as e:
+			print("Device does not support CEC: " + str(e))
+
 		#Hide the cursor
 		display = Gdk.Display.get_default()
 		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
@@ -44,7 +53,6 @@ class SmartMirror:
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
 			self.keyword_listener.start()
-		#Gtk.main()
 		self.running = True
 		while self.running:
 			try:
@@ -77,6 +85,8 @@ class SmartMirror:
 
 	def wake_screen(self):
 		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
+		if(self.is_awake == False and self.tv is not None):
+			self.tv.power_on()
 		self.is_awake = True
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
@@ -84,6 +94,11 @@ class SmartMirror:
 	def sleep_screen(self):
 		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 0)
 		self.is_awake = False
+		def turn_off_tv():
+			if(self.is_awake == False and self.tv is not None):
+				self.tv.standby()
+		# turn the tv off after 5 minutes of the screen being asleep
+		GLib.timeout_add_seconds(60 * 5, turn_off_tv)
 
 if __name__ == '__main__':
 	SmartMirror()
