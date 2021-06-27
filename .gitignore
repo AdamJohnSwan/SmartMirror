@@ -146,3 +146,6 @@ settings.json
 
 bin/
 include/
+
+# glade backup file
+*.glade~
