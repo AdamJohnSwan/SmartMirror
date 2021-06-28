@@ -72,7 +72,7 @@ class SmartMirror:
 		elif("sleep" in text):
 			self.sleep_screen()
 		elif("time" in text):
-			say(datetime.datetime.now().strftime("%-I:%-M%p"))
+			say(datetime.datetime.now().strftime("%-I:%M%p"))
 		elif("stop recording" in text):
 			pass
 		else:

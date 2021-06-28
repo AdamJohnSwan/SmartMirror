@@ -1,5 +1,7 @@
 import gi
 gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 from gi.repository import GLib
 import datetime
@@ -48,6 +50,7 @@ class Weather():
 			builder.get_object("forecast-weather").hide()
 		if(self.settings["modules"]["currentweather"] == False and self.settings["modules"]["dayweather"] == False):
 			builder.get_object("weather-container").hide()
+
 	def set_current_weather(self):
 		city_id = self.settings["cityid"]
 		api_key = self.settings["openweatherkey"]
@@ -64,6 +67,7 @@ class Weather():
 			self.weather.set_current_weather(result_json)
 		# update every 30 minutes
 		GLib.timeout_add_seconds(1800, self.set_current_weather)
+
 	def set_day_weather(self):
 		city_id = self.settings["cityid"]
 		api_key = self.settings["openweatherkey"]
@@ -83,18 +87,26 @@ class Weather():
 					self.forecast_weather_times[i].icon.set_from_icon_name("gtk-missing-image")
 				self.forecast_weather_times[i].tempature.set_text(str(round(weather["main"]["temp"])) + "F")
 			self.weather.set_day_weather(result_json["list"][:8])
+		#Check three hours after the first weather time
 		difference = (first_time + datetime.timedelta(hours = 3)) - datetime.datetime.now()
 		time_to_check_again =  round(difference.total_seconds())
 		GLib.timeout_add_seconds(time_to_check_again, self.set_day_weather)
 		
 def get_icon(url, icon):
-	def callback(res, *args, **kwargs):
-		loader = GdkPixbuf.PixbufLoader()
-		loader.write(res.content)
-		loader.close()
-		icon.set_from_pixbuf(loader.get_pixbuf())
-	kwargs = {}
-	kwargs['hooks'] = {'response': callback}
-	kwargs['timeout'] = 15
-	thread = Thread(target=requests.get, args=[url], kwargs=kwargs)
+	def get_icon_from_thread(url,icon):
+		try:
+			res = requests.get(url, timeout=10)
+			if(res.status_code == 200):
+				loader = GdkPixbuf.PixbufLoader()
+				loader.write(res.content)
+				loader.close()
+				pixbuf = loader.get_pixbuf()
+				Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, icon.set_from_pixbuf, pixbuf)
+			else:
+				raise Exception("request did not return 200 " + res.text)
+		except Exception as e:
+			print(e)
+			Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, icon.set_from_icon_name, "gtk-missing-image", Gtk.IconSize.MENU)
+
+	thread = Thread(target=get_icon_from_thread, args=(url,icon))
 	thread.start()
