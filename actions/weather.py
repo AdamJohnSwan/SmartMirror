@@ -54,17 +54,20 @@ class Weather():
 	def set_current_weather(self):
 		city_id = self.settings["cityid"]
 		api_key = self.settings["openweatherkey"]
-		result = requests.get(f"https://api.openweathermap.org/data/2.5/weather?units=imperial&id={city_id}&appid={api_key}")
-		if(result.status_code == 200):
-			result_json = result.json()
-			self.current_tempature.set_text(str(round(result_json["main"]["temp"])) + "F")
-			if("rain" in result_json):
-				self.current_rain.set_text(str(result_json["rain"]["1h"]) + "mm")
-			else:
-				self.current_rain.set_text("0mm")
-			self.current_humidity.set_text(str(result_json["main"]["humidity"]) + "%")
-			self.current_cloud.set_text(str(result_json["clouds"]["all"]) + "%")
-			self.weather.set_current_weather(result_json)
+		try:
+			result = requests.get(f"https://api.openweathermap.org/data/2.5/weather?units=imperial&id={city_id}&appid={api_key}")
+			if(result.status_code == 200):
+				result_json = result.json()
+				self.current_tempature.set_text(str(round(result_json["main"]["temp"])) + "F")
+				if("rain" in result_json):
+					self.current_rain.set_text(str(result_json["rain"]["1h"]) + "mm")
+				else:
+					self.current_rain.set_text("0mm")
+				self.current_humidity.set_text(str(result_json["main"]["humidity"]) + "%")
+				self.current_cloud.set_text(str(result_json["clouds"]["all"]) + "%")
+				self.weather.set_current_weather(result_json)
+		except Exception as e:
+			print("Problem with getting current weather: " + e)
 		# update every 30 minutes
 		GLib.timeout_add_seconds(1800, self.set_current_weather)
 
@@ -72,21 +75,24 @@ class Weather():
 		city_id = self.settings["cityid"]
 		api_key = self.settings["openweatherkey"]
 		first_time = datetime.datetime.now()
-		result = requests.get(f"https://api.openweathermap.org/data/2.5/forecast?units=imperial&id={city_id}&appid={api_key}")
-		if(result.status_code == 200):
-			result_json = result.json()
-			for i in range(8):
-				weather = result_json["list"][i]
-				time = datetime.datetime.fromtimestamp(weather["dt"])
-				if(i == 0):
-					first_time = time
-				self.forecast_weather_times[i].time.set_text(time.strftime("%-I%p"))
-				if(len(weather["weather"]) > 0):
-					get_icon(f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}.png", self.forecast_weather_times[i].icon)
-				else:
-					self.forecast_weather_times[i].icon.set_from_icon_name("gtk-missing-image")
-				self.forecast_weather_times[i].tempature.set_text(str(round(weather["main"]["temp"])) + "F")
-			self.weather.set_day_weather(result_json["list"][:8])
+		try:
+			result = requests.get(f"https://api.openweathermap.org/data/2.5/forecast?units=imperial&id={city_id}&appid={api_key}")
+			if(result.status_code == 200):
+				result_json = result.json()
+				for i in range(8):
+					weather = result_json["list"][i]
+					time = datetime.datetime.fromtimestamp(weather["dt"])
+					if(i == 0):
+						first_time = time
+					self.forecast_weather_times[i].time.set_text(time.strftime("%-I%p"))
+					if(len(weather["weather"]) > 0):
+						get_icon(f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}.png", self.forecast_weather_times[i].icon)
+					else:
+						self.forecast_weather_times[i].icon.set_from_icon_name("gtk-missing-image")
+					self.forecast_weather_times[i].tempature.set_text(str(round(weather["main"]["temp"])) + "F")
+				self.weather.set_day_weather(result_json["list"][:8])
+		except Exception as e:
+			print("Problem with getting weather forcast: " + e)
 		#Check three hours after the first weather time
 		difference = (first_time + datetime.timedelta(hours = 3)) - datetime.datetime.now()
 		time_to_check_again =  round(difference.total_seconds())
