@@ -19,5 +19,14 @@
         "Friday": "08:00:00",
         "Saturday": false,
         "Sunday": false
-    }
+    },
+    "calendars": [
+        {
+            "__comment__": "Calendar types: ics, google, outlook",
+            "name": "Holiday",
+            "group": "default",
+            "type": "ics",
+            "url": "http://www.calendarlabs.com/ical-calendar/ics/76/US_Holidays.ics"
+        }
+    ]
 }

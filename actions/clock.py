@@ -45,7 +45,10 @@ class Clock():
 						self.alarm_triggered = True
 				else:
 					self.alarm_triggered = False
-		except ValueError as e:
+		except KeyError as e:
 			# Either the alarm for the day doesn't exist, or the time is in the wrong format.
 			print("Cannot find alarm time for today: " + e)
+		except ValueError as e:
+			# Either the alarm for the day doesn't exist, or the time is in the wrong format.
+			print("Cannot parse time: " + e)
 		
