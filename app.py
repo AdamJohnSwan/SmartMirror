@@ -1,6 +1,6 @@
 import gi
-import cec
 gi.require_version("Gtk", "3.0")
+import cec
 import datetime
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -47,7 +47,7 @@ class SmartMirror:
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
-		self.clock = Clock(builder)
+		self.clock = Clock(builder, self.wake_screen)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
 		
@@ -67,9 +67,7 @@ class SmartMirror:
 
 	def keyword_callback(self, text):
 		print(text)
-		if("wake" in text):
-			self.wake_screen()
-		elif("sleep" in text):
+		if("sleep" in text):
 			self.sleep_screen()
 		elif("time" in text):
 			say(datetime.datetime.now().strftime("%-I:%M%p"))

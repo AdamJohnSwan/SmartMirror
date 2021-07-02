@@ -6,9 +6,18 @@
         "currentweather": true,
         "dayweather": true,
         "calendar": true,
-        "holidays": true,
         "alarm": true,
         "voice": true
     },
-    "screentimeout": 45
+    "screentimeout": 45,
+    "alarm": { 
+        "__comment__": "Times are in 24 hour format",
+        "Monday": "08:00:00",
+        "Tuesday": "08:00:00",
+        "Wednesday": "08:00:00",
+        "Thursday": "08:00:00",
+        "Friday": "08:00:00",
+        "Saturday": false,
+        "Sunday": false
+    }
 }
