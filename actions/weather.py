@@ -67,7 +67,7 @@ class Weather():
 				self.current_cloud.set_text(str(result_json["clouds"]["all"]) + "%")
 				self.weather.set_current_weather(result_json)
 		except Exception as e:
-			print("Problem with getting current weather: " + e)
+			print("Problem with getting current weather: " + str(e))
 		# update every 30 minutes
 		GLib.timeout_add_seconds(1800, self.set_current_weather)
 
@@ -92,7 +92,7 @@ class Weather():
 					self.forecast_weather_times[i].tempature.set_text(str(round(weather["main"]["temp"])) + "F")
 				self.weather.set_day_weather(result_json["list"][:8])
 		except Exception as e:
-			print("Problem with getting weather forcast: " + e)
+			print("Problem with getting weather forcast: " + str(e))
 		#Check three hours after the first weather time
 		difference = (first_time + datetime.timedelta(hours = 3)) - datetime.datetime.now()
 		time_to_check_again =  round(difference.total_seconds())
@@ -116,3 +116,4 @@ def get_icon(url, icon):
 
 	thread = Thread(target=get_icon_from_thread, args=(url,icon))
 	thread.start()
+
