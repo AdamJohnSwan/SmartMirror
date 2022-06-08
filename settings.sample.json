@@ -20,13 +20,22 @@
         "Saturday": false,
         "Sunday": false
     },
+    "__comment__": "Calendar types: ics, caldav, google, outlook",
     "calendars": [
         {
-            "__comment__": "Calendar types: ics, google, outlook",
             "name": "Holiday",
             "group": "default",
             "type": "ics",
             "url": "http://www.calendarlabs.com/ical-calendar/ics/76/US_Holidays.ics"
+        },
+        {
+            "name": "My WebDav Calendar",
+            "group": "default",
+            "type": "caldav",
+            "url": "http://url/to/webdav/",
+            "calendar_name": "name of calendar on WebDav server",
+            "username": "username",
+            "password": "password"
         }
     ]
 }

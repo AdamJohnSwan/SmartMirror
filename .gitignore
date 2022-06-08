@@ -149,3 +149,7 @@ include/
 
 # glade backup file
 *.glade~
+
+#venv files
+lib64
+pyvenv.cfg
