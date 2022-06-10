@@ -36,6 +36,13 @@
             "calendar_name": "name of calendar on WebDav server",
             "username": "username",
             "password": "password"
+        },
+        {
+            "name": "My Google Calendar",
+            "group": "default",
+            "type": "google",
+            "calendar_id": "calendar id to get events from",
+            "credentials_path": "path/to/oauth/credentials.json"
         }
     ]
 }

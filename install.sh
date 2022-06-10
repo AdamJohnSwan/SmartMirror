@@ -9,6 +9,6 @@ else
     wget "https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/deepspeech-0.9.3-models.scorer"
 fi
 
-virtualenv ./ --python=python3
+python -m venv ./ 
 source bin/activate
-pip3 install -r requirements.txt
+pip install -r requirements.txt

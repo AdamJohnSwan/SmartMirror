@@ -153,3 +153,7 @@ include/
 #venv files
 lib64
 pyvenv.cfg
+
+#google files
+credentials.json
+token.json

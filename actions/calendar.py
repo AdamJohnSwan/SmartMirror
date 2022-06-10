@@ -6,9 +6,13 @@ from gi.repository import GLib
 from datetime import datetime
 from datetime import date
 from actions.settings import get_settings
+from utils.google_api_helper import get_credentials
+from googleapiclient.errors import HttpError
 import icalendar
 import caldav
 import requests
+
+MAX_EVENTS = 5
 
 class CalendarEvent():
 	def __init__(self, event):
@@ -33,7 +37,7 @@ class CalendarEntity():
 	def get_recent_events(self):
 		# remove events that occured after the current time
 		events = [e for e in self.events if e.start.timestamp() > datetime.now().timestamp()]
-		return events[:5]
+		return events[:MAX_EVENTS]
 
 class Calendar():
 	def __init__(self, builder):
@@ -56,7 +60,7 @@ class Calendar():
 			elif(cal_type == "webdav"):
 				self.get_webdav_calendar_data(calendar)
 			elif(cal_type == "google"):
-				pass
+				self.get_google_calendar_data(calendar)
 			elif(cal_type == "outlook"):
 				pass
 		# update every 30 minutes
@@ -75,7 +79,7 @@ class Calendar():
 				else:
 					group = "default"
 				if(group not in self.calendars or self.calendars[group] == None):
-					self.calendars[group] = CalendarEntity(content)
+					self.calendars[group] = CalendarEntity(calendar)
 				for component in content.walk("VEVENT"):
 					# add the event to a calendar inside a group. All calendar events in a group will show up on the same screen
 					self.calendars[group].add_event({
@@ -119,6 +123,58 @@ class Calendar():
 			print("Calendar does not exist: " + str(e))
 		except Exception as e:
 			print(f"Error getting calendar {calendar['name']} information: {str(e)}")
+
+	def get_google_calendar_data(self, calendar):
+		try:
+			print(f"getting information for calendar {calendar['name']}")
+			service = get_credentials(calendar["credentials_path"])
+			now = datetime.utcnow().isoformat() + 'Z'
+			group = None
+			if "group" in calendar:
+				group = calendar["group"]
+			else:
+				group = "default"
+			if(group not in self.calendars or self.calendars[group] == None):
+				self.calendars[group] = CalendarEntity(calendar)
+
+			events_result = service.events().list(calendarId=calendar["calendar_id"], timeMin=now, maxResults=MAX_EVENTS + 1, singleEvents=True, orderBy='startTime').execute()
+			events = events_result.get('items', [])
+
+			for event in events:
+				start_string_datetime = event["start"].get("dateTime", None)
+				start_string_date = event["start"].get("dateTime", None)
+				start = None
+				if start_string_datetime is not None:
+					start = datetime.strptime(start_string_datetime, "%Y-%m-%dT%H:%M:%S%z")
+				elif start_string_date is not None:
+					start = datetime.strptime(start_string_date, "%Y-%m-%d")
+				else:
+					print(f"Cannot parse start time for event {event['summary']}")
+					continue
+				
+				end_string_datetime = event["start"].get("dateTime", None)
+				end_string_date = event["end"].get("dateTime", None)
+				end = None
+				if end_string_datetime is not None:
+					end = datetime.strptime(end_string_datetime, "%Y-%m-%dT%H:%M:%S%z")
+				elif end_string_date is not None:
+					end = datetime.strptime(end_string_date, "%Y-%m-%d")
+				else:
+					print(f"Cannot parse end time for event {event['summary']}")
+					continue
+				
+				self.calendars[group].add_event({
+					"summary": event["summary"],
+					"start": start,
+					"end": end
+				})
+		except KeyError as e:
+			print("settings missing key: " + str(e))
+		except HttpError as e:
+			print("Http error getting Google event data" + str(e))
+		except ValueError as e:
+			print("Cannot parse date: " + str(e))
+
 
 	def create_calendar_display(self):
 		for group_key in self.calendars.keys():
