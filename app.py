@@ -18,7 +18,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -38,7 +38,7 @@ class SmartMirror:
 
 		#Hide the cursor
 		display = Gdk.Display.get_default()
-		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.LEFT_PTR)
 		Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.wrapper = builder.get_object("wrapper")
@@ -71,6 +71,8 @@ class SmartMirror:
 			self.sleep_screen()
 		elif("time" in text):
 			say(datetime.datetime.now().strftime("%-I:%M%p"))
+		elif("calendar" in text):
+			self.calendar.set_calendar_to_display(text)
 		elif("stop recording" in text):
 			pass
 		else:

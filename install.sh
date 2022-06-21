@@ -1,6 +1,6 @@
-sudo apt install build-essential python-dev
-sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0 python3-pyaudio portaudio19-dev libatlas-base-dev espeak-ng libcec-dev
-if [ -e deepspeech-0.9.*-models.tflite ]
+sudo apt install build-essential python3-dev python3-venv -y
+sudo apt install python3-gi libcairo2-dev python3-gi-cairo gir1.2-gtk-3.0 python3-pyaudio portaudio19-dev libatlas-base-dev espeak-ng libcec-dev -y
+if [ -e deepspeech-0.9.*-models.pbmm ]
 then
     echo "Models are already present"
 else

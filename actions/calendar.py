@@ -1,3 +1,4 @@
+from calendar import calendar
 import gi
 from numpy import sort
 gi.require_version("Gtk", "3.0")
@@ -24,6 +25,7 @@ class CalendarEntity():
 	def __init__(self, calendar):
 		self.calendar = calendar
 		self.events = []
+		self.old_events = []
 	
 	def add_event(self, event):
 		# convert from date to datetime if needed
@@ -39,20 +41,34 @@ class CalendarEntity():
 		events = [e for e in self.events if e.start.timestamp() > datetime.now().timestamp()]
 		return events[:MAX_EVENTS]
 
+	def clear_events(self):
+		self.old_events = self.events
+		self.events = []
+
 class Calendar():
 	def __init__(self, builder):
 		self.settings = get_settings()
 		self.calendar_container = builder.get_object("calendar-container")
 		self.calendars = {}
 		self.calendar_group_containers = {}
-		self.display_group = None
+		self.display_group = "default"
 		if(self.settings["modules"]["calendar"]):
 			self.get_calendar_data()
-			self.create_calendar_display()
 		else:
 			self.calendar_container.hide()
+	
+	def set_calendar_to_display(self, text_to_check):
+		for calendar_key in self.calendars.keys():
+			if (calendar_key.lower() in text_to_check.lower()):
+				print(f"Displaying calendar {calendar_key}")
+				self.display_group = calendar_key
+				break
 		
 	def get_calendar_data(self):
+		# clear out any previous events since new ones are going to be retrieved.
+		for calendar_key in self.calendars.keys():
+			print(f"Clearing events for calendar {calendar_key}.")
+			self.calendars[calendar_key].clear_events()
 		for calendar in self.settings["calendars"]:
 			cal_type = calendar["type"]
 			if(cal_type == "ics"):
@@ -63,6 +79,7 @@ class Calendar():
 				self.get_google_calendar_data(calendar)
 			elif(cal_type == "outlook"):
 				pass
+		self.create_calendar_display()
 		# update every 30 minutes
 		GLib.timeout_add_seconds(1800, self.get_calendar_data)
 
@@ -177,6 +194,9 @@ class Calendar():
 
 
 	def create_calendar_display(self):
+		# remove the old calendar display
+		for child in self.calendar_container.get_children():
+			child.destroy()
 		for group_key in self.calendars.keys():
 			group = self.calendars[group_key]
 			self.calendar_group_containers[group_key] = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
@@ -201,12 +221,12 @@ class Calendar():
 				display_calendar_container.pack_end(Gtk.Label.new(event_time), False, False, 0)
 				self.calendar_group_containers[group_key].pack_start(display_calendar_container, True, True, 0)
 			self.calendar_container.pack_start(self.calendar_group_containers[group_key], False, False, 0)
-		self.show_calendar("default")
+		self.show_calendar()
 
-	def show_calendar(self, group_to_show):
+	def show_calendar(self):
 		#only one calendar group can be shown at a time
 		for group_key in self.calendars.keys():
-			if(group_key == group_to_show):
+			if(group_key == self.display_group):
 				self.calendar_group_containers[group_key].show_all()
 			else:
 				self.calendar_group_containers[group_key].hide()
