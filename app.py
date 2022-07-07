@@ -10,6 +10,7 @@ from actions.settings import get_settings
 from actions.clock import Clock
 from actions.weather import Weather
 from actions.calendar import Calendar
+from actions.sleep import Sleep
 from actions.keyword_listener import KeywordListener
 from actions.speech import say
 class SmartMirror:
@@ -50,6 +51,7 @@ class SmartMirror:
 		self.clock = Clock(builder, self.wake_screen)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
+		self.sleep = Sleep(builder, self.sleep_screen)
 		
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
@@ -67,16 +69,20 @@ class SmartMirror:
 
 	def keyword_callback(self, text):
 		print(text)
-		if("sleep" in text):
-			self.sleep_screen()
-		elif("time" in text):
-			say(datetime.datetime.now().strftime("%-I:%M%p"))
-		elif("calendar" in text):
-			self.calendar.set_calendar_to_display(text)
-		elif("stop recording" in text):
-			pass
+		if (self.sleep.is_checking_for_wakeup):
+			if("yes" in text):
+				self.sleep.end_checking_for_wakeup()
 		else:
-			return True
+			if("sleep" in text):
+				self.sleep_screen()
+			elif("time" in text):
+				say(datetime.datetime.now().strftime("%-I:%M%p"))
+			elif("calendar" in text):
+				self.calendar.set_calendar_to_display(text)
+			elif("stop recording" in text):
+				pass
+			else:
+				return True
 	
 	def sleep_timer_check(self):
 		if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
@@ -85,6 +91,9 @@ class SmartMirror:
 			GLib.timeout_add_seconds(20, self.sleep_timer_check)
 
 	def wake_screen(self):
+		# if the mirror is sleeping then ask the user if they really want to turn it on
+		self.sleep.check_for_sleep()
+
 		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
 		if(self.is_awake == False and self.tv is not None):
 			self.tv.power_on()

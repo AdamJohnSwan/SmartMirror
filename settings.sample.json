@@ -7,11 +7,12 @@
         "dayweather": true,
         "calendar": true,
         "alarm": true,
+        "sleep": true,
         "voice": true
     },
     "screentimeout": 45,
     "alarm": { 
-        "__comment__": "Times are in 24 hour format",
+        "__comment__": "Set the time when the mirror will turn on the screen. Times are in 24 hour format",
         "Monday": "08:00:00",
         "Tuesday": "08:00:00",
         "Wednesday": "08:00:00",
@@ -19,6 +20,16 @@
         "Friday": "08:00:00",
         "Saturday": false,
         "Sunday": false
+    },
+    "sleep": {
+        "__comment__": "Set the time intervals where the mirror will confirm before waking up. Times are in 24 hour format",
+        "Monday": "22:00:00-07:00:00",
+        "Tuesday": "22:00:00-07:00:00",
+        "Wednesday": "22:00:00-07:00:00",
+        "Thursday": "22:00:00-07:00:00",
+        "Friday": "23:00:00-08:00:00",
+        "Saturday": "23:00:00-08:00:00",
+        "Sunday": "23:00:00-07:00:00"
     },
     "__comment__": "Calendar types: ics, caldav, google, outlook",
     "calendars": [

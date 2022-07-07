@@ -1,6 +1,4 @@
-from calendar import calendar
 import gi
-from numpy import sort
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import GLib
@@ -9,6 +7,7 @@ from datetime import date
 from actions.settings import get_settings
 from utils.google_api_helper import get_credentials
 from googleapiclient.errors import HttpError
+from google.auth.exceptions import RefreshError
 import icalendar
 import caldav
 import requests
@@ -191,6 +190,8 @@ class Calendar():
 			print("Http error getting Google event data" + str(e))
 		except ValueError as e:
 			print("Cannot parse date: " + str(e))
+		except RefreshError as e:
+			print("Refresh token for calendar is invalid: " + str(e))
 
 
 	def create_calendar_display(self):
