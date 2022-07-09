@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <!-- interface-css-provider-path views.css -->
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="default_width">840</property>
     <property name="default_height">500</property>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
-      <object class="GtkBox" id="wrapper">
+      <object class="GtkStack" id="wrapper">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
         <property name="margin_left">30</property>
         <property name="margin_right">20</property>
         <property name="margin_top">20</property>
         <property name="margin_bottom">20</property>
-        <property name="orientation">vertical</property>
+        <property name="transition_type">crossfade</property>
         <child>
-          <object class="GtkGrid">
+          <object class="GtkGrid" id="main-content-container">
+            <property name="name">main-content-container</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -842,10 +846,37 @@
               </packing>
             </child>
           </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="snooze-container">
+            <property name="name">snooze-container</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="snooze-message">
+                <property name="name">snooze-message</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">Are you sure you want to wake up the mirror?</property>
+                <property name="justify">center</property>
+                <property name="wrap">True</property>
+                <property name="track_visited_links">False</property>
+                <style>
+                  <class name="snooze-message"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <style>

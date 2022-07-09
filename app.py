@@ -48,10 +48,10 @@ class SmartMirror:
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
+		self.sleep = Sleep(builder, self.sleep_screen)
 		self.clock = Clock(builder, self.wake_screen)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
-		self.sleep = Sleep(builder, self.sleep_screen)
 		
 		self.keyword_listener = KeywordListener(builder, self.keyword_callback, self.wake_screen)
 		if(self.settings["modules"]["voice"]):
@@ -71,7 +71,7 @@ class SmartMirror:
 		print(text)
 		if (self.sleep.is_checking_for_wakeup):
 			if("yes" in text):
-				self.sleep.end_checking_for_wakeup()
+				self.sleep.end_check_for_wakeup()
 		else:
 			if("sleep" in text):
 				self.sleep_screen()

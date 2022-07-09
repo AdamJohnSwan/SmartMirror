@@ -7,6 +7,18 @@
 	background-color: black;
 }
 
+.wrapper {
+	background-color: transparent;
+}
+
+.snooze-overlay {
+
+}
+
+.snooze-message {
+	font-size: 2em;
+}
+
 .clock {
 	font-size: 8em;
 }

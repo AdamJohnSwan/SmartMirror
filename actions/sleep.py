@@ -1,7 +1,6 @@
 from actions.settings import get_settings
 from datetime import datetime
-from datetime import time
-from datetime import timedelta
+from gi.repository import GLib
 
 class Interval():
     def __init__(self, start = 0, end = 0):
@@ -13,8 +12,20 @@ class Sleep():
         self.settings = get_settings()
         self.is_checking_for_wakeup = False
         self.sleep_screen = sleep_screen
-        self.sleep_times = self = [Interval()] * 7
-        self.sleep_container = builder.get_object("sleep-container")
+        self.sleep_times = [Interval()] * 7
+        self.wrapper = builder.get_object("wrapper")
+
+        self.content = None
+        self.message = None
+        children = self.wrapper.get_children()
+        # for some reason set_visible_child_by_name does not work so the child objects have to be retrieved here for use in hiding/showing the prompt.
+        for child in children:
+            name = child.get_name()
+            if (name == "main-content-container"):
+                self.content = child
+            elif (name == "snooze-container"):
+                self.message = child
+
         if(self.settings["modules"]["sleep"]):
             self.translate_times(self.settings["sleep"])
     
@@ -61,9 +72,14 @@ class Sleep():
     def check_for_wakeup(self):
         self.is_checking_for_wakeup = True
         # put a message on the screen prompting the user if they really want to wake up the mirror.
+        if (self.message != None):
+            self.wrapper.set_visible_child(self.message)
 
-    def end_checking_for_wakeup(self):
-        # user wants to turn on the mirror. Hide the prompt.
+    def end_check_for_wakeup(self):
         self.is_checking_for_wakeup = False
+        # user wants to turn on the mirror. Hide the prompt.
+        if (self.content != None):
+            self.wrapper.set_visible_child(self.content)
+
 
         
