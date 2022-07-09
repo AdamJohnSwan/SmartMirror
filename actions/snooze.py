@@ -7,12 +7,12 @@ class Interval():
         self.start = start
         self.end = end
 
-class Sleep():
+class Snooze():
     def __init__(self, builder, sleep_screen):
         self.settings = get_settings()
         self.is_checking_for_wakeup = False
         self.sleep_screen = sleep_screen
-        self.sleep_times = [Interval()] * 7
+        self.snooze_times = [Interval()] * 7
         self.wrapper = builder.get_object("wrapper")
 
         self.content = None
@@ -26,8 +26,8 @@ class Sleep():
             elif (name == "snooze-container"):
                 self.message = child
 
-        if(self.settings["modules"]["sleep"]):
-            self.translate_times(self.settings["sleep"])
+        if(self.settings["modules"]["snooze"]):
+            self.translate_times(self.settings["snooze"])
     
     def translate_times(self, settings):
         def string_to_interval(string):
@@ -41,32 +41,32 @@ class Sleep():
             return Interval(start_seconds, end_seconds)
 
         if (settings["Monday"]):
-            self.sleep_times[0] = string_to_interval(settings["Monday"])
+            self.snooze_times[0] = string_to_interval(settings["Monday"])
         if (settings["Tuesday"]):
-            self.sleep_times[1] = string_to_interval(settings["Tuesday"])
+            self.snooze_times[1] = string_to_interval(settings["Tuesday"])
         if (settings["Wednesday"]):
-            self.sleep_times[2] = string_to_interval(settings["Wednesday"])
+            self.snooze_times[2] = string_to_interval(settings["Wednesday"])
         if (settings["Thursday"]):
-            self.sleep_times[3] = string_to_interval(settings["Thursday"])
+            self.snooze_times[3] = string_to_interval(settings["Thursday"])
         if (settings["Friday"]):
-            self.sleep_times[4] = string_to_interval(settings["Friday"])
+            self.snooze_times[4] = string_to_interval(settings["Friday"])
         if (settings["Saturday"]):
-            self.sleep_times[5] = string_to_interval(settings["Saturday"])
+            self.snooze_times[5] = string_to_interval(settings["Saturday"])
         if (settings["Sunday"]):
-            self.sleep_times[6] = string_to_interval(settings["Sunday"])
+            self.snooze_times[6] = string_to_interval(settings["Sunday"])
 
-    def check_for_sleep(self):
+    def check_for_snooze(self):
         now = datetime.now()
         seconds = ((now.hour * 60 * 60) + (now.minute * 60) + now.second)
-        sleep_time = self.sleep_times[now.weekday()]
-        if (sleep_time.start > sleep_time.end):
+        snooze_time = self.snooze_times[now.weekday()]
+        if (snooze_time.start > snooze_time.end):
             # start is greater than end which means that the end time is the next day.
-            if (seconds < sleep_time.start and seconds > sleep_time.end):
+            if (seconds < snooze_time.start and seconds > snooze_time.end):
                 return
         else:
-            if (seconds > sleep_time.start and seconds < sleep_time.end):
+            if (seconds > snooze_time.start and seconds < snooze_time.end):
                 return
-        # if neither of these if-statements pass then the mirror is in sleep mode.
+        # if neither of these if-statements pass then the mirror is in snooze mode.
         self.check_for_wakeup()
     
     def check_for_wakeup(self):
@@ -74,6 +74,12 @@ class Sleep():
         # put a message on the screen prompting the user if they really want to wake up the mirror.
         if (self.message != None):
             self.wrapper.set_visible_child(self.message)
+            GLib.timeout_add_seconds(60, self.check_for_wakeup_timeout)
+        
+
+    def check_for_wakeup_timeout(self):
+        if self.is_checking_for_wakeup:
+            self.sleep_screen()
 
     def end_check_for_wakeup(self):
         self.is_checking_for_wakeup = False

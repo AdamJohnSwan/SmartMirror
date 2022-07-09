@@ -7,7 +7,7 @@
         "dayweather": true,
         "calendar": true,
         "alarm": true,
-        "sleep": true,
+        "snooze": true,
         "voice": true
     },
     "screentimeout": 45,
@@ -21,7 +21,7 @@
         "Saturday": false,
         "Sunday": false
     },
-    "sleep": {
+    "snooze": {
         "__comment__": "Set the time intervals where the mirror will confirm before waking up. Times are in 24 hour format",
         "Monday": "22:00:00-07:00:00",
         "Tuesday": "22:00:00-07:00:00",

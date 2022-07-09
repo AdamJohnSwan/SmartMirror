@@ -10,7 +10,7 @@ from actions.settings import get_settings
 from actions.clock import Clock
 from actions.weather import Weather
 from actions.calendar import Calendar
-from actions.sleep import Sleep
+from actions.snooze import Snooze
 from actions.keyword_listener import KeywordListener
 from actions.speech import say
 class SmartMirror:
@@ -19,7 +19,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		#window.fullscreen()
+		window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -39,7 +39,7 @@ class SmartMirror:
 
 		#Hide the cursor
 		display = Gdk.Display.get_default()
-		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.LEFT_PTR)
+		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
 		Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.wrapper = builder.get_object("wrapper")
@@ -48,7 +48,7 @@ class SmartMirror:
 		self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
 		self.sleep_timer_check()
 
-		self.sleep = Sleep(builder, self.sleep_screen)
+		self.snooze = Snooze(builder, self.sleep_screen)
 		self.clock = Clock(builder, self.wake_screen)
 		self.weather = Weather(builder)
 		self.calendar = Calendar(builder)
@@ -69,9 +69,11 @@ class SmartMirror:
 
 	def keyword_callback(self, text):
 		print(text)
-		if (self.sleep.is_checking_for_wakeup):
+		if (self.snooze.is_checking_for_wakeup):
 			if("yes" in text):
-				self.sleep.end_check_for_wakeup()
+				self.snooze.end_check_for_wakeup()
+			else:
+				return True
 		else:
 			if("sleep" in text):
 				self.sleep_screen()
@@ -91,8 +93,8 @@ class SmartMirror:
 			GLib.timeout_add_seconds(20, self.sleep_timer_check)
 
 	def wake_screen(self):
-		# if the mirror is sleeping then ask the user if they really want to turn it on
-		self.sleep.check_for_sleep()
+		# if the mirror is snoozing then ask the user if they really want to turn it on
+		self.snooze.check_for_sleep()
 
 		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
 		if(self.is_awake == False and self.tv is not None):
