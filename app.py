@@ -19,7 +19,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -39,7 +39,8 @@ class SmartMirror:
 
 		#Hide the cursor
 		display = Gdk.Display.get_default()
-		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		#cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.LEFT_PTR)
 		Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.wrapper = builder.get_object("wrapper")
@@ -94,7 +95,7 @@ class SmartMirror:
 
 	def wake_screen(self):
 		# if the mirror is snoozing then ask the user if they really want to turn it on
-		self.snooze.check_for_sleep()
+		self.snooze.check_for_snooze()
 
 		Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
 		if(self.is_awake == False and self.tv is not None):

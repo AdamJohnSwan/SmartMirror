@@ -157,3 +157,6 @@ pyvenv.cfg
 #google files
 credentials.json
 token.json
+
+#cec
+COPYING
