@@ -1,6 +1,7 @@
 import os
 import glob
 import struct
+import datetime
 
 import deepspeech
 from audio_tools import VADAudio
@@ -12,37 +13,61 @@ from threading import Thread
 
 from pvporcupine import *
 
-class KeywordListener(Thread):
+from espeakng import ESpeakNG
 
-    def __init__(self, builder, keyword_callback, wake_screen):
-        super(KeywordListener, self).__init__()
+from utils.service_handler import Service
+from utils.service_handler import ServiceHandler
+
+class Voice(Thread, Service):
+
+    def __init__(self, service_handler: ServiceHandler):
+        super(Voice, self).__init__()
+
+        self.service_handler = service_handler
 
         self._library_path = LIBRARY_PATH
         self._model_path = MODEL_PATH
         self._keyword_paths = [KEYWORD_PATHS["americano"]]
         self._sensitivities = [0.5]
         self.listening = True
+        self.model = None
+        self.porcupine = None
+        self.pa = None
+        self.audio_stream = None
+        self.listener_icon = None
+        self.listener_words = None
+
+    def start_service(self):
+        builder = self.service_handler.get_service('builder')
+
+        self.screen_service = self.service_handler.get_service('screen')
+        self.calendar_service = self.service_handler.get_service('calendar')
+        self.snooze_service = self.service_handler.get_service('snooze')
+
         self.listener_icon = builder.get_object("listener-icon")
         self.listener_words = builder.get_object("listener-words")
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
-        self.keyword_callback = keyword_callback
-        self.wake_screen = wake_screen
 
         pbmm_model_name = glob.glob(os.path.join('*.pbmm'))
         tflite_model_name = glob.glob(os.path.join('*.tflite'))
         model_name = (pbmm_model_name + tflite_model_name)[0]
         self.model = deepspeech.Model(model_name)
 
-        self.porcupine = None
-        self.pa = None
-        self.audio_stream = None
-
         try:
             scorer_name = glob.glob(os.path.join('*.scorer'))[0]
             self.model.enableExternalScorer(scorer_name)
         except Exception as e:
             print(e)  
+
+    def say(phrase):
+        print(phrase)
+        esng = ESpeakNG()
+        esng.voice = "en+f4"
+        esng.speed = 150
+        esng.word_gap = 30
+        # the k is because the start of the phrase is cut off
+        esng.say("k " + phrase)
 
     def transcribe(self):
         # Start audio with VAD
@@ -128,3 +153,22 @@ class KeywordListener(Thread):
             if self.pa is not None:
                 self.pa.terminate()
         self.set_listening(False)
+
+    def keyword_callback(self, text):
+        print(text)
+        if (self.snooze_service.is_checking_for_wakeup):
+            if("yes" in text):
+                self.snooze_service.end_check_for_wakeup()
+            else:
+                return True
+        else:
+            if("sleep" in text):
+                self.screen_service.sleep_screen()
+            elif("time" in text):
+                self.say(datetime.datetime.now().strftime("%-I:%M%p"))
+            elif("calendar" in text):
+                self.calendar_service.set_calendar_to_display(text)
+            elif("stop recording" in text):
+                pass
+            else:
+                return True

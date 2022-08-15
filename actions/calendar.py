@@ -4,13 +4,15 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from datetime import datetime
 from datetime import date
-from actions.settings import get_settings
+from utils.settings import get_settings
 from utils.google_api_helper import get_credentials
 from googleapiclient.errors import HttpError
 from google.auth.exceptions import RefreshError
 import icalendar
 import caldav
 import requests
+from utils.service_handler import Service
+from utils.service_handler import ServiceHandler
 
 MAX_EVENTS = 5
 
@@ -44,13 +46,20 @@ class CalendarEntity():
 		self.old_events = self.events
 		self.events = []
 
-class Calendar():
-	def __init__(self, builder):
+class Calendar(Service):
+	def __init__(self, service_handler: ServiceHandler):
+		self.service_handler = service_handler
+
 		self.settings = get_settings()
-		self.calendar_container = builder.get_object("calendar-container")
+		self.calendar_container = None
 		self.calendars = {}
 		self.calendar_group_containers = {}
 		self.display_group = "default"
+	
+	def start_service(self):
+		builder = self.service_handler.get_service('builder')
+
+		self.calendar_container = builder.get_object("calendar-container")
 		if(self.settings["modules"]["calendar"]):
 			self.get_calendar_data()
 		else:

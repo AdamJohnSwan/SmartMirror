@@ -1,22 +1,36 @@
-from actions.settings import get_settings
+from utils.settings import get_settings
 from datetime import datetime
 from gi.repository import GLib
+from utils.service_handler import Service
+from utils.service_handler import ServiceHandler
+
 
 class Interval():
     def __init__(self, start = 0, end = 0):
         self.start = start
         self.end = end
 
-class Snooze():
-    def __init__(self, builder, sleep_screen):
+class Snooze(Service):
+    def __init__(self, service_handler: ServiceHandler):
+        self.service_handler = service_handler
+        self.screen_service = None
         self.settings = get_settings()
         self.is_checking_for_wakeup = False
-        self.sleep_screen = sleep_screen
-        self.snooze_times = [Interval()] * 7
-        self.wrapper = builder.get_object("wrapper")
+        self.snooze_times = []
+        self.wrapper = None
 
         self.content = None
         self.message = None
+        children = []
+
+    def start_service(self):
+        builder = self.service_handler.get_service('builder')
+        self.wrapper = builder.get_object("wrapper")
+
+        self.screen_service = self.service_handler.get_service('screen')
+
+        self.snooze_times = [Interval()] * 7
+
         children = self.wrapper.get_children()
         # for some reason set_visible_child_by_name does not work so the child objects have to be retrieved here for use in hiding/showing the prompt.
         for child in children:
@@ -27,8 +41,7 @@ class Snooze():
             elif (name == "snooze-container"):
                 self.message = child
 
-        if(self.settings["modules"]["snooze"]):
-            self.translate_times(self.settings["snooze"])
+        self.translate_times(self.settings["snooze"])
     
     def translate_times(self, settings):
         def string_to_interval(string):
@@ -80,7 +93,7 @@ class Snooze():
 
     def check_for_wakeup_timeout(self):
         if self.is_checking_for_wakeup:
-            self.sleep_screen()
+            self.screen_service.sleep_screen()
 
     def end_check_for_wakeup(self):
         self.is_checking_for_wakeup = False
