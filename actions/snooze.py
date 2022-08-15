@@ -23,6 +23,7 @@ class Snooze():
             name = child.get_name()
             if (name == "main-content-container"):
                 self.content = child
+                self.wrapper.set_visible_child(self.content)
             elif (name == "snooze-container"):
                 self.message = child
 
