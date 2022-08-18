@@ -24,12 +24,9 @@ class Voice(Thread, Service):
 
         self.service_handler = service_handler
 
-        self._library_path = LIBRARY_PATH
-        self._model_path = MODEL_PATH
         self._keyword_paths = [KEYWORD_PATHS["americano"]]
         self._sensitivities = [0.5]
         self.listening = True
-        self.model = None
         self.porcupine = None
         self.pa = None
         self.audio_stream = None
@@ -54,8 +51,8 @@ class Voice(Thread, Service):
     
     def run(self):
         self.porcupine = Porcupine(
-            library_path=self._library_path,
-            model_path=self._model_path,
+            library_path=LIBRARY_PATH,
+            model_path=MODEL_PATH,
             keyword_paths=self._keyword_paths,
             sensitivities=self._sensitivities)
 
@@ -101,7 +98,7 @@ class Voice(Thread, Service):
             print("Listening...")
             while keep_listening:
                 try:
-                    audio = recognizer.listen(source, 10)
+                    audio = recognizer.listen(source, 10, 10)
                     text = recognizer.recognize_sphinx(audio)
                     Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, text)
                     keep_listening = self.keyword_callback(text)
