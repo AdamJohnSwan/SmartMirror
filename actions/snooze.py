@@ -21,7 +21,6 @@ class Snooze(Service):
 
         self.content = None
         self.message = None
-        children = []
 
     def start_service(self):
         builder = self.service_handler.get_service('builder')
@@ -41,7 +40,8 @@ class Snooze(Service):
             elif (name == "snooze-container"):
                 self.message = child
 
-        self.translate_times(self.settings["snooze"])
+        if(self.settings["modules"]["snooze"]):
+            self.translate_times(self.settings["snooze"])
     
     def translate_times(self, settings):
         def string_to_interval(string):

@@ -2,7 +2,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 from datetime import datetime
-from actions.settings import get_settings
+from utils.settings import get_settings
 from utils.service_handler import Service
 from utils.service_handler import ServiceHandler
 

@@ -5,7 +5,6 @@ import datetime
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
-from gi.repository import GLib
 from utils.service_handler import create_service_handler
 class SmartMirror:
 	def __init__(self):

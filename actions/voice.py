@@ -1,10 +1,9 @@
-import os
-import glob
+import gi
+gi.require_version("Gtk", "3.0")
 import struct
 import datetime
 
-import deepspeech
-from audio_tools import VADAudio
+import speech_recognition as sr
 import numpy as np
 import pyaudio
 from gi.repository import Gdk
@@ -49,64 +48,10 @@ class Voice(Thread, Service):
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
 
-        pbmm_model_name = glob.glob(os.path.join('*.pbmm'))
-        tflite_model_name = glob.glob(os.path.join('*.tflite'))
-        model_name = (pbmm_model_name + tflite_model_name)[0]
-        self.model = deepspeech.Model(model_name)
-
-        try:
-            scorer_name = glob.glob(os.path.join('*.scorer'))[0]
-            self.model.enableExternalScorer(scorer_name)
-        except Exception as e:
-            print(e)  
-
-    def say(phrase):
-        print(phrase)
-        esng = ESpeakNG()
-        esng.voice = "en+f4"
-        esng.speed = 150
-        esng.word_gap = 30
-        # the k is because the start of the phrase is cut off
-        esng.say("k " + phrase)
-
-    def transcribe(self):
-        # Start audio with VAD
-        vad_audio = VADAudio(aggressiveness=1)
-        print("Listening...")
-        self.toggle_listener_icon()
-        self.wake_screen()
-        frames = vad_audio.vad_collector()
-        # Stream from microphone to DeepSpeech using VAD
-        stream_context = self.model.createStream()
-        for frame in frames:
-            if frame is not None:
-                stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
-            else:
-                text = stream_context.finishStream()
-                Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, text)
-                keep_listening = self.keyword_callback(text)
-                if keep_listening is not True:
-                    vad_audio.destroy()
-                    return 1
-                stream_context = self.model.createStream()
-        vad_audio.destroy()
-        stream_context.freeStream()
-        return 1
-
-    def set_listening(self, shouldListen):
-        self.listening = shouldListen
-
-    def toggle_listener_icon(self):
-        is_visible = self.listener_icon.get_visible()
-        if is_visible:
-            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, "")
-            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
-            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
-        else:
-            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.show)
-            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.show)
-        
-
+        # starts listening for the keyword. Runs the `run` method in a seperate thread.
+        if(self.settings["modules"]["voice"]):
+            self.start()
+    
     def run(self):
         self.porcupine = Porcupine(
             library_path=self._library_path,
@@ -134,13 +79,51 @@ class Voice(Thread, Service):
             if result >= 0:
                 print('Detected keyword')
                 self.audio_stream.close()
-                res = self.transcribe()
-                if res:
-                    self.toggle_listener_icon()
-                    self.audio_stream = get_audio_stream()
+                self.transcribe()
+                self.toggle_listener_icon()
+                self.audio_stream = get_audio_stream()
         
         self.end_listener()
         return
+
+    def transcribe(self):
+        recognizer = sr.Recognizer()
+        microphone = sr.Microphone()
+        with microphone as source:
+            recognizer.adjust_for_ambient_noise(source)
+        print("Set minimum energy threshold to {}".format(recognizer.energy_threshold))
+        
+        self.toggle_listener_icon()
+        self.screen_service.wake_screen()
+
+        keep_listening = True
+        with microphone as source:
+            print("Listening...")
+            while keep_listening:
+                try:
+                    audio = recognizer.listen(source, 10)
+                    text = recognizer.recognize_sphinx(audio)
+                    Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, text)
+                    keep_listening = self.keyword_callback(text)
+                except sr.WaitTimeoutError:
+                    keep_listening = False
+                    pass
+                except sr.UnknownValueError:
+                    pass
+
+    def set_listening(self, shouldListen):
+        self.listening = shouldListen
+
+    def toggle_listener_icon(self):
+        is_visible = self.listener_icon.get_visible()
+        if is_visible:
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, "")
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.hide)
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.hide)
+        else:
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.show)
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_icon.show)
+        
 
     def end_listener(self):
         if(self.listening is False):
@@ -172,3 +155,12 @@ class Voice(Thread, Service):
                 pass
             else:
                 return True
+
+    def say(phrase):
+        print(phrase)
+        esng = ESpeakNG()
+        esng.voice = "en+f4"
+        esng.speed = 150
+        esng.word_gap = 30
+        # the k is because the start of the phrase is cut off
+        esng.say("k " + phrase)

@@ -74,23 +74,16 @@ class ServiceHandler():
 
 def create_service_handler(builder) -> ServiceHandler:
     service_handler = ServiceHandler()
-    settings = get_settings()
-    modules = settings['modules']
 
     service_handler.add_service('builder', Builder(service_handler, builder))
     service_handler.add_service('screen', Screen(service_handler))
     service_handler.add_service('clock', Clock(service_handler))
 
-    if (modules['currentweather'] or modules['dayweather']):
-        service_handler.add_service('weather', Weather(service_handler))
-    if (modules['calendar']):
-        service_handler.add_service('calendar', Calendar(service_handler))
-    if (modules['alarm']):
-        service_handler.add_service('alarm', Alarm(service_handler))
-    if (modules['snooze']):
-        service_handler.add_service('snooze', Snooze(service_handler))
-    if (modules['voice']):
-        service_handler.add_service('voice', Voice(service_handler))
+    service_handler.add_service('weather', Weather(service_handler))
+    service_handler.add_service('calendar', Calendar(service_handler))
+    service_handler.add_service('alarm', Alarm(service_handler))
+    service_handler.add_service('snooze', Snooze(service_handler))
+    service_handler.add_service('voice', Voice(service_handler))
     
     service_handler.initiate_services()
     
