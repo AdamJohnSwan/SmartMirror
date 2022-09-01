@@ -7,7 +7,8 @@ from gi.repository import GLib
 import datetime
 import requests
 from threading import Thread
-from actions.settings import get_settings
+from utils.settings import get_settings
+from utils.service import Service
 
 class ForecastTime():
 	def __init__(self, time, icon, tempature):
@@ -24,8 +25,23 @@ class WeatherInfo():
 	def set_day_weather(self, weather):
 		self.list = weather
 
-class Weather():
-	def __init__(self, builder):
+class Weather(Service):
+	def __init__(self, service_handler):
+
+		self.service_handler = service_handler
+
+		self.settings = get_settings()
+		self.current_tempature = None
+		self.current_rain = None
+		self.current_humidity = None
+		self.current_cloud = None
+		self.forecast_weather_times = []
+		self.weather = None
+
+	def start_service(self):
+		
+		builder = self.service_handler.get_service('builder')
+
 		self.current_tempature = builder.get_object("current-tempature")
 		self.current_rain = builder.get_object("current-rain")
 		self.current_humidity = builder.get_object("current-humidity")
@@ -37,17 +53,17 @@ class Weather():
 			icon = builder.get_object(f"forecast-image{i + 1}")
 			tempature = builder.get_object(f"forecast-tempature{i + 1}")
 			self.forecast_weather_times.append(ForecastTime(time, icon, tempature))
-
-		self.settings = get_settings()
 		
 		if(self.settings["modules"]["currentweather"]):
 			self.set_current_weather()
 		else:
 			builder.get_object("current-weather").hide()
+
 		if(self.settings["modules"]["dayweather"]):
 			self.set_day_weather()
 		else:
 			builder.get_object("forecast-weather").hide()
+			
 		if(self.settings["modules"]["currentweather"] == False and self.settings["modules"]["dayweather"] == False):
 			builder.get_object("weather-container").hide()
 

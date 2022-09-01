@@ -2,7 +2,6 @@
     "cityid": 0,
     "openweatherkey": "",
     "modules": {
-        "clock": true,
         "currentweather": true,
         "dayweather": true,
         "calendar": true,

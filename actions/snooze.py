@@ -1,31 +1,41 @@
-import gi
-gi.require_version("Gtk", "3.0")
-from actions.settings import get_settings
+from utils.settings import get_settings
 from datetime import datetime
 from gi.repository import GLib
+from utils.service import Service
+
 
 class Interval():
     def __init__(self, start = 0, end = 0):
         self.start = start
         self.end = end
 
-class Snooze():
-    def __init__(self, builder, sleep_screen):
+class Snooze(Service):
+    def __init__(self, service_handler):
+        self.service_handler = service_handler
+        self.screen_service = None
         self.settings = get_settings()
         self.is_checking_for_wakeup = False
-        self.sleep_screen = sleep_screen
-        self.snooze_times = [Interval()] * 7
-        self.wrapper = builder.get_object("wrapper")
+        self.snooze_times = []
+        self.wrapper = None
 
         self.content = None
         self.message = None
-        children = self.wrapper.get_children()
+
+    def start_service(self):
+        builder = self.service_handler.get_service('builder')
+        self.stack = builder.get_object("stack")
+
+        self.screen_service = self.service_handler.get_service('screen')
+
+        self.snooze_times = [Interval()] * 7
+
+        children = self.stack.get_children()
         # for some reason set_visible_child_by_name does not work so the child objects have to be retrieved here for use in hiding/showing the prompt.
         for child in children:
             name = child.get_name()
-            if (name == "main-content-container"):
+            if (name == "weather-calendar-content"):
                 self.content = child
-                self.wrapper.set_visible_child(self.content)
+                self.stack.set_visible_child(self.content)
             elif (name == "snooze-container"):
                 self.message = child
 
@@ -76,19 +86,19 @@ class Snooze():
         self.is_checking_for_wakeup = True
         # put a message on the screen prompting the user if they really want to wake up the mirror.
         if (self.message != None):
-            self.wrapper.set_visible_child(self.message)
+            self.stack.set_visible_child(self.message)
             GLib.timeout_add_seconds(60, self.check_for_wakeup_timeout)
         
 
     def check_for_wakeup_timeout(self):
         if self.is_checking_for_wakeup:
-            self.sleep_screen()
+            self.screen_service.sleep_screen()
 
     def end_check_for_wakeup(self):
         self.is_checking_for_wakeup = False
         # user wants to turn on the mirror. Hide the prompt.
         if (self.content != None):
-            self.wrapper.set_visible_child(self.content)
+            self.stack.set_visible_child(self.content)
 
 
         
