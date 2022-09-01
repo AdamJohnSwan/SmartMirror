@@ -159,7 +159,7 @@ class Voice(Thread, Service):
             else:
                 return True
 
-    def say(phrase):
+    def say(self, phrase):
         print(phrase)
         esng = ESpeakNG()
         esng.voice = "en+f4"
