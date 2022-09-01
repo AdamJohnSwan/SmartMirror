@@ -181,10 +181,12 @@
                 <property name="valign">center</property>
                 <property name="transition-type">crossfade</property>
                 <child>
-                  <object class="GtkBox" id="weather-calendar-content">
+                  <!-- n-columns=1 n-rows=2 -->
+                  <object class="GtkGrid" id="weather-calendar-content">
                     <property name="name">weather-calendar-content</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkBox" id="weather-container">
                         <property name="visible">True</property>
@@ -929,9 +931,8 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
@@ -944,9 +945,8 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
                       </packing>
                     </child>
                   </object>
