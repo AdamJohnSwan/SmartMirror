@@ -23,19 +23,19 @@ class Snooze(Service):
 
     def start_service(self):
         builder = self.service_handler.get_service('builder')
-        self.wrapper = builder.get_object("wrapper")
+        self.stack = builder.get_object("stack")
 
         self.screen_service = self.service_handler.get_service('screen')
 
         self.snooze_times = [Interval()] * 7
 
-        children = self.wrapper.get_children()
+        children = self.stack.get_children()
         # for some reason set_visible_child_by_name does not work so the child objects have to be retrieved here for use in hiding/showing the prompt.
         for child in children:
             name = child.get_name()
-            if (name == "main-content-container"):
+            if (name == "weather-calendar-content"):
                 self.content = child
-                self.wrapper.set_visible_child(self.content)
+                self.stack.set_visible_child(self.content)
             elif (name == "snooze-container"):
                 self.message = child
 
@@ -86,7 +86,7 @@ class Snooze(Service):
         self.is_checking_for_wakeup = True
         # put a message on the screen prompting the user if they really want to wake up the mirror.
         if (self.message != None):
-            self.wrapper.set_visible_child(self.message)
+            self.stack.set_visible_child(self.message)
             GLib.timeout_add_seconds(60, self.check_for_wakeup_timeout)
         
 
@@ -98,7 +98,7 @@ class Snooze(Service):
         self.is_checking_for_wakeup = False
         # user wants to turn on the mirror. Hide the prompt.
         if (self.content != None):
-            self.wrapper.set_visible_child(self.content)
+            self.stack.set_visible_child(self.content)
 
 
         
