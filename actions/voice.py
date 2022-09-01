@@ -96,11 +96,13 @@ class Voice(Thread, Service):
         self.screen_service.wake_screen()
 
         keep_listening = True
+        start_listening_time = datetime.datetime.now()
         with microphone as source:
             print("Listening...")
             while keep_listening:
                 try:
                     audio = recognizer.listen(source, 10, 10)
+                    print('Recognizing speech.')
                     text = recognizer.recognize_sphinx(audio)
                     Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.listener_words.set_text, text)
                     keep_listening = self.keyword_callback(text)
@@ -109,6 +111,8 @@ class Voice(Thread, Service):
                     pass
                 except sr.UnknownValueError:
                     pass
+                if (start_listening_time + datetime.timedelta(seconds=20) < datetime.datetime.now()):
+                    keep_listening = False
 
     def set_listening(self, shouldListen):
         self.listening = shouldListen
