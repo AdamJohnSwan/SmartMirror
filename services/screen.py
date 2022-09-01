@@ -21,6 +21,9 @@ class Screen(Service):
         self.snooze_service = self.service_handler.get_service('snooze')
         self.screen_service = self.service_handler.get_service('screen')
         self.alarm_service = self.service_handler.get_service('alarm')
+
+        builder = self.service_handler.get_service('builder')
+        self.wrapper = builder.get_object('wrapper')
         try:
             cec.init()
             self.tv = cec.Device(cec.CECDEVICE_TV)
@@ -44,8 +47,8 @@ class Screen(Service):
         self.snooze_service.check_for_snooze()
 
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
-        if(self.is_awake == False):
-            self.tv_service.power_on()
+        if(self.tv is not None):
+            self.tv.power_on()
         self.is_awake = True
 
     def sleep_screen(self):

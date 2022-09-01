@@ -7,4 +7,4 @@ class Builder(Service):
    
        
    def get_object(self, object_name: str):
-      self.builder.get_object(object_name)
+      return self.builder.get_object(object_name)

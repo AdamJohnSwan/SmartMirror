@@ -15,14 +15,13 @@ class Clock(Service):
 		builder = self.service_handler.get_service('builder')
 
 		self.alarm_service = self.service_handler.get_service('alarm')
-
 		self.clock = builder.get_object("clock")
 		self.weekday = builder.get_object("weekday")
 		self.date = builder.get_object("date")
 
 		self.clock_container = builder.get_object("clock-container")
 
-		self.set_time()
+		GLib.timeout_add_seconds(1, self.set_time)
 	
 	def set_time(self):
 		now = datetime.now()
@@ -33,7 +32,8 @@ class Clock(Service):
 		self.weekday.set_text(current_day)
 		self.date.set_text(current_date)
 
-		self.alarm_service.check_alarm()
+		if(self.settings["modules"]["alarm"]):
+			self.alarm_service.check_alarm()
 		
 		GLib.timeout_add_seconds(30, self.set_time)
 		

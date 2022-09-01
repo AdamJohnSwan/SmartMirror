@@ -1,7 +1,5 @@
 import gi
 gi.require_version("Gtk", "3.0")
-import cec
-import datetime
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -11,7 +9,7 @@ class SmartMirror:
 		builder = Gtk.Builder()
 		builder.add_from_file("views/main.glade")
 		window = builder.get_object("window1")
-		window.fullscreen()
+		#window.fullscreen()
 		window.connect("destroy", self.destroy)
 		provider = Gtk.CssProvider()
 		csspath = Gio.File.new_for_path(path="views/views.css")
@@ -21,8 +19,8 @@ class SmartMirror:
 
 		#Hide the cursor
 		display = Gdk.Display.get_default()
-		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
-		Gdk.get_default_root_window().set_cursor(cursor)
+		#cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		#Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.service_handler = create_service_handler(builder)
 

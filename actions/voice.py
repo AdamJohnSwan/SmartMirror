@@ -15,6 +15,7 @@ from pvporcupine import *
 from espeakng import ESpeakNG
 
 from utils.service import Service
+from utils.settings import get_settings
 
 class Voice(Thread, Service):
 
@@ -22,6 +23,8 @@ class Voice(Thread, Service):
         super(Voice, self).__init__()
 
         self.service_handler = service_handler
+
+        self.settings = get_settings()
 
         self._keyword_paths = [KEYWORD_PATHS["americano"]]
         self._sensitivities = [0.5]
