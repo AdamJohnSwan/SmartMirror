@@ -44,7 +44,8 @@ class Screen(Service):
         
     def wake_screen(self):
 		# if the mirror is snoozing then ask the user if they really want to turn it on
-        self.snooze_service.check_for_snooze()
+        if (self.is_awake == False):
+            self.snooze_service.check_for_snooze()
 
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
         if(self.tv is not None):
