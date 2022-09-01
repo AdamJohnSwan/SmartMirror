@@ -3,11 +3,10 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 from datetime import datetime
 from utils.settings import get_settings
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 
 class Clock(Service):
-	def __init__(self, service_handler: ServiceHandler):
+	def __init__(self, service_handler):
 
 		self.service_handler = service_handler
 		self.settings = get_settings()

@@ -1,6 +1,5 @@
 import datetime
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 from utils.settings import get_settings
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -8,7 +7,7 @@ from gi.repository import GLib
 
 class Alarm(Service):
 
-    def __init__(self, service_handler: ServiceHandler):
+    def __init__(self, service_handler):
         self.service_handler = service_handler
         self.settings = get_settings()
         self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])

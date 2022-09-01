@@ -3,15 +3,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GLib
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 import cec
 import datetime
 from utils.settings import get_settings
 
 class Screen(Service):
 
-    def __init__(self, service_handler: ServiceHandler):
+    def __init__(self, service_handler):
         self.service_handler = service_handler
         self.tv = None
         self.is_awake = True

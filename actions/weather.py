@@ -8,8 +8,7 @@ import datetime
 import requests
 from threading import Thread
 from utils.settings import get_settings
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 
 class ForecastTime():
 	def __init__(self, time, icon, tempature):
@@ -27,7 +26,7 @@ class WeatherInfo():
 		self.list = weather
 
 class Weather(Service):
-	def __init__(self, service_handler: ServiceHandler):
+	def __init__(self, service_handler):
 
 		self.service_handler = service_handler
 

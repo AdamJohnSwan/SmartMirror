@@ -1,5 +1,4 @@
 from typing import Dict
-from utils.settings import get_settings
 from services.builder import Builder
 from services.screen import Screen
 from actions.clock import Clock
@@ -8,20 +7,7 @@ from actions.calendar import Calendar
 from actions.snooze import Snooze
 from actions.alarm import Alarm
 from actions.voice import Voice
-
-class Service():
-    def start_service():
-        """
-        Abstract function used by a service to start up it resources.
-        """
-        pass
-
-    def stop_service():
-        """
-        Abstract function used by a service to stop and dispose it resources.
-        """
-        pass
-
+from utils.service import Service
 
 class ServiceHandler():
     def __init__(self):

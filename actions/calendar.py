@@ -11,8 +11,7 @@ from google.auth.exceptions import RefreshError
 import icalendar
 import caldav
 import requests
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 
 MAX_EVENTS = 5
 
@@ -47,7 +46,7 @@ class CalendarEntity():
 		self.events = []
 
 class Calendar(Service):
-	def __init__(self, service_handler: ServiceHandler):
+	def __init__(self, service_handler):
 		self.service_handler = service_handler
 
 		self.settings = get_settings()

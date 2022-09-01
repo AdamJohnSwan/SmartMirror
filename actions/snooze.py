@@ -1,8 +1,7 @@
 from utils.settings import get_settings
 from datetime import datetime
 from gi.repository import GLib
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 
 
 class Interval():
@@ -11,7 +10,7 @@ class Interval():
         self.end = end
 
 class Snooze(Service):
-    def __init__(self, service_handler: ServiceHandler):
+    def __init__(self, service_handler):
         self.service_handler = service_handler
         self.screen_service = None
         self.settings = get_settings()

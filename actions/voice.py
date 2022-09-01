@@ -14,12 +14,11 @@ from pvporcupine import *
 
 from espeakng import ESpeakNG
 
-from utils.service_handler import Service
-from utils.service_handler import ServiceHandler
+from utils.service import Service
 
 class Voice(Thread, Service):
 
-    def __init__(self, service_handler: ServiceHandler):
+    def __init__(self, service_handler):
         super(Voice, self).__init__()
 
         self.service_handler = service_handler
