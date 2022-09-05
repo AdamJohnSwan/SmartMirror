@@ -32,6 +32,8 @@ class Screen(Service):
         except Exception as e:
             print("Device does not support CEC: " + str(e))
 
+        self.start_sleep_timer()
+
     def start_sleep_timer(self):
         self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
         self.sleep_timer_check()
