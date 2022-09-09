@@ -93,6 +93,8 @@ class Snooze(Service):
     def check_for_wakeup_timeout(self):
         if self.is_checking_for_wakeup:
             self.screen_service.sleep_screen()
+            if (self.content != None):
+                self.stack.set_visible_child(self.content)
 
     def end_check_for_wakeup(self):
         self.is_checking_for_wakeup = False
