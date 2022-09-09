@@ -148,7 +148,7 @@ class Voice(Thread, Service):
             else:
                 return True
         else:
-            if("sleep" in text):
+            if("sleep" in text or "goodnight" in text or "good night" in text):
                 self.screen_service.sleep_screen()
             elif("time" in text):
                 self.say(datetime.datetime.now().strftime("%-I:%M%p"))
