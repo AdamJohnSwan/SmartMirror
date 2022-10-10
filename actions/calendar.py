@@ -224,7 +224,9 @@ class Calendar(Service):
 				display_calendar_container = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
 				context = display_calendar_container.get_style_context()
 				context.add_class("calendar-entry")
-				display_calendar_container.pack_start(Gtk.Label.new(event.summary), False, False, 0)
+				# truncate text to only 40 characters
+				formatted_summary = event.summary[:40]
+				display_calendar_container.pack_start(Gtk.Label.new(formatted_summary), False, False, 0)
 				# time is either displayed as just a date or a date and a time
 				format = "%I:%M %p %-m/%-d/%y"
 				# if the event is at the very start of day then don't display the time. Because the event is more than likely an all-day event.
