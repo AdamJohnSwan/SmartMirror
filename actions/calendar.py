@@ -169,7 +169,7 @@ class Calendar(Service):
 
 			for event in events:
 				start_string_datetime = event["start"].get("dateTime", None)
-				start_string_date = event["start"].get("dateTime", None)
+				start_string_date = event["start"].get("date", None)
 				start = None
 				if start_string_datetime is not None:
 					start = datetime.strptime(start_string_datetime, "%Y-%m-%dT%H:%M:%S%z")
@@ -180,7 +180,7 @@ class Calendar(Service):
 					continue
 				
 				end_string_datetime = event["start"].get("dateTime", None)
-				end_string_date = event["end"].get("dateTime", None)
+				end_string_date = event["end"].get("date", None)
 				end = None
 				if end_string_datetime is not None:
 					end = datetime.strptime(end_string_datetime, "%Y-%m-%dT%H:%M:%S%z")
