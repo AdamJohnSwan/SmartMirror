@@ -16,10 +16,18 @@ class Alarm(Service):
         self.is_awake = True
         self.wake_up_times = {}
         self.alarm_triggered = False
+        self.service_started = False
 
     def start_service(self):
         self.screen_service = self.service_handler.get_service('screen')
         if(self.settings["modules"]["alarm"]):
+            self.wake_up_times = self.get_wake_up_times()
+        self.service_started = True
+    
+    def get_wake_up_times(self):
+        if (self.service_started):
+            return self.wake_up_times
+        else:
             try:
                 self.wake_up_times = self.settings["alarm"]
             except ValueError:
@@ -28,7 +36,7 @@ class Alarm(Service):
     def check_alarm(self):
         now = datetime.datetime.now()
         try:
-            wake_up_time = self.wake_up_times[now.strftime("%A")]
+            wake_up_time = self.get_wake_up_times()[now.strftime("%A")]
             if(wake_up_time != False):
                 parsed_time = datetime.datetime.strptime(wake_up_time, "%H:%M:%S").replace(year=now.year, month=now.month, day=now.day)
                 if(now > parsed_time):
@@ -39,6 +47,7 @@ class Alarm(Service):
                     self.alarm_triggered = False
         except KeyError as e:
             # Either the alarm for the day doesn't exist, or the time is in the wrong format.
+            import pdb; pdb.set_trace()
             print("Cannot find alarm time for today: " + str(e))
         except ValueError as e:
             # Either the alarm for the day doesn't exist, or the time is in the wrong format.

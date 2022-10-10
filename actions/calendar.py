@@ -71,6 +71,7 @@ class Calendar(Service):
 			if (calendar_key.lower() in text_to_check.lower()):
 				print(f"Displaying calendar {calendar_key}")
 				self.display_group = calendar_key
+				self.show_calendar()
 				break
 		
 	def get_calendar_data(self):
