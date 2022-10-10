@@ -61,6 +61,8 @@ class Calendar(Service):
 		self.calendar_container = builder.get_object("calendar-container")
 		if(self.settings["modules"]["calendar"]):
 			self.get_calendar_data()
+			# update every 30 minutes
+			GLib.timeout_add_seconds(1800, self.get_calendar_data)
 		else:
 			self.calendar_container.hide()
 	
@@ -72,23 +74,24 @@ class Calendar(Service):
 				break
 		
 	def get_calendar_data(self):
-		# clear out any previous events since new ones are going to be retrieved.
-		for calendar_key in self.calendars.keys():
-			print(f"Clearing events for calendar {calendar_key}.")
-			self.calendars[calendar_key].clear_events()
-		for calendar in self.settings["calendars"]:
-			cal_type = calendar["type"]
-			if(cal_type == "ics"):
-				self.get_ics_calendar_data(calendar)
-			elif(cal_type == "webdav"):
-				self.get_webdav_calendar_data(calendar)
-			elif(cal_type == "google"):
-				self.get_google_calendar_data(calendar)
-			elif(cal_type == "outlook"):
-				pass
-		self.create_calendar_display()
-		# update every 30 minutes
-		GLib.timeout_add_seconds(1800, self.get_calendar_data)
+		try:
+			# clear out any previous events since new ones are going to be retrieved.
+			for calendar_key in self.calendars.keys():
+				print(f"Clearing events for calendar group {calendar_key}.")
+				self.calendars[calendar_key].clear_events()
+			for calendar in self.settings["calendars"]:
+				cal_type = calendar["type"]
+				if(cal_type == "ics"):
+					self.get_ics_calendar_data(calendar)
+				elif(cal_type == "webdav"):
+					self.get_webdav_calendar_data(calendar)
+				elif(cal_type == "google"):
+					self.get_google_calendar_data(calendar)
+				elif(cal_type == "outlook"):
+					pass
+			self.create_calendar_display()
+		finally:
+			return True
 
 	def get_ics_calendar_data(self, calendar):
 		try:

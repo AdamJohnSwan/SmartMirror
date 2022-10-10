@@ -1,3 +1,4 @@
+from typing import final
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -39,10 +40,14 @@ class Screen(Service):
         self.sleep_timer_check()
 
     def sleep_timer_check(self):
-        if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
-            self.sleep_screen()
-        else:
-            GLib.timeout_add_seconds(20, self.sleep_timer_check)
+        try:
+            if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
+                self.sleep_screen()
+            else:
+                GLib.timeout_add_seconds(20, self.sleep_timer_check)
+        finally:
+            # return false so the old timeout gets removed.
+            return False
         
     def wake_screen(self):
 		# if the mirror is snoozing then ask the user if they really want to turn it on
@@ -60,5 +65,6 @@ class Screen(Service):
         def turn_off_tv():
             if(self.is_awake == False and self.tv is not None):
                 self.tv.standby()
+            return False
         # turn the tv off after 5 minutes of the screen being asleep
         GLib.timeout_add_seconds(60 * 5, turn_off_tv)

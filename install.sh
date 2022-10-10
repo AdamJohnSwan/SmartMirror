@@ -1,6 +1,7 @@
 sudo apt install build-essential python3-dev python3-venv -y
 sudo apt install python3-gi \
  libcairo2-dev \
+ libgirepository1.0-dev \
  python3-gi-cairo \
  gir1.2-gtk-3.0 \
  python3-pyaudio \

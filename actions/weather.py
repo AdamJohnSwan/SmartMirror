@@ -56,11 +56,15 @@ class Weather(Service):
 		
 		if(self.settings["modules"]["currentweather"]):
 			self.set_current_weather()
+			# update every 30 minutes
+			GLib.timeout_add_seconds(1800, self.set_current_weather)
 		else:
 			builder.get_object("current-weather").hide()
 
 		if(self.settings["modules"]["dayweather"]):
 			self.set_day_weather()
+			# update every 90 minutes.
+			GLib.timeout_add_seconds(5400, self.set_day_weather)
 		else:
 			builder.get_object("forecast-weather").hide()
 			
@@ -84,13 +88,12 @@ class Weather(Service):
 				self.weather.set_current_weather(result_json)
 		except Exception as e:
 			print("Problem with getting current weather: " + str(e))
-		# update every 30 minutes
-		GLib.timeout_add_seconds(1800, self.set_current_weather)
+		finally:
+			return True
 
 	def set_day_weather(self):
 		city_id = self.settings["cityid"]
 		api_key = self.settings["openweatherkey"]
-		first_time = datetime.datetime.now()
 		try:
 			result = requests.get(f"https://api.openweathermap.org/data/2.5/forecast?units=imperial&id={city_id}&appid={api_key}")
 			if(result.status_code == 200):
@@ -98,8 +101,6 @@ class Weather(Service):
 				for i in range(8):
 					weather = result_json["list"][i]
 					time = datetime.datetime.fromtimestamp(weather["dt"])
-					if(i == 0):
-						first_time = time
 					self.forecast_weather_times[i].time.set_text(time.strftime("%-I%p"))
 					if(len(weather["weather"]) > 0):
 						get_icon(f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}.png", self.forecast_weather_times[i].icon)
@@ -109,10 +110,9 @@ class Weather(Service):
 				self.weather.set_day_weather(result_json["list"][:8])
 		except Exception as e:
 			print("Problem with getting weather forcast: " + str(e))
-		#Check three hours after the first weather time
-		difference = (first_time + datetime.timedelta(hours = 3)) - datetime.datetime.now()
-		time_to_check_again =  round(difference.total_seconds())
-		GLib.timeout_add_seconds(time_to_check_again, self.set_day_weather)
+		finally:
+			return True
+		
 		
 def get_icon(url, icon):
 	def get_icon_from_thread(url,icon):
