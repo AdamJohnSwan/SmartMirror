@@ -86,6 +86,8 @@ class Weather(Service):
 				self.current_humidity.set_text(str(result_json["main"]["humidity"]) + "%")
 				self.current_cloud.set_text(str(result_json["clouds"]["all"]) + "%")
 				self.weather.set_current_weather(result_json)
+			else:
+				raise Exception(result.text)
 		except Exception as e:
 			print("Problem with getting current weather: " + str(e))
 		finally:
