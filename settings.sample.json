@@ -41,7 +41,7 @@
         {
             "name": "My WebDav Calendar",
             "group": "default",
-            "type": "caldav",
+            "type": "webdav",
             "url": "http://url/to/webdav/",
             "calendar_name": "name of calendar on WebDav server",
             "username": "username",
