@@ -39,6 +39,7 @@ class Voice(Thread, Service):
         builder = self.service_handler.get_service('builder')
 
         self.screen_service = self.service_handler.get_service('screen')
+        self.alarm_service = self.service_handler.get_service('alarm')
         self.calendar_service = self.service_handler.get_service('calendar')
         self.snooze_service = self.service_handler.get_service('snooze')
 
@@ -99,6 +100,8 @@ class Voice(Thread, Service):
         start_listening_time = datetime.datetime.now()
         with microphone as source:
             print("Listening...")
+            # Saying the mirror keyword will stop the alarm
+            self.alarm_service.stop_alarm()
             while keep_listening:
                 try:
                     audio = recognizer.listen(source, 10, 10)
@@ -156,6 +159,8 @@ class Voice(Thread, Service):
                 self.calendar_service.set_calendar_to_display(text)
             elif("stop recording" in text):
                 pass
+            elif("stop" in text):
+                self.alarm_service.stop_alarm()
             else:
                 return True
 

@@ -12,6 +12,7 @@
     "screentimeout": 45,
     "alarm": { 
         "__comment__": "Set the time when the mirror will turn on the screen. Times are in 24 hour format",
+        "soundfile": "/path/to/alarm/sound.wav",
         "Monday": "08:00:00",
         "Tuesday": "08:00:00",
         "Wednesday": "08:00:00",

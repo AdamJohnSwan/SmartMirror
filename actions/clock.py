@@ -33,8 +33,7 @@ class Clock(Service):
 			self.clock.set_text(current_time)
 			self.weekday.set_text(current_day)
 			self.date.set_text(current_date)
-
-			if(self.settings["modules"]["alarm"]):
+			if(self.settings["modules"]["alarm"]) and self.alarm_service.service_started == True:
 				self.alarm_service.check_alarm()
 		finally:
 			return True

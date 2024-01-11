@@ -15,7 +15,7 @@ class ServiceHandler():
 
     def add_service(self, service_name: str, service: Service):
         """
-        Add a service to the dictioanry of services.
+        Add a service to the dictionary of services.
 
         :param service_name: The name of the service that will be used when stopping or retrieving the service.
         :param service: A class that extends the Service abstract class.
