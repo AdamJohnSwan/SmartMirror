@@ -159,8 +159,8 @@ class Voice(Thread, Service):
                 self.calendar_service.set_calendar_to_display(text)
             elif("stop recording" in text):
                 pass
-            elif("stop" in text):
-                self.alarm_service.stop_alarm()
+            elif("alarm" in text):
+                self.alarm_service.set_alarm()
             else:
                 return True
 

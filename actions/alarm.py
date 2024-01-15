@@ -16,17 +16,25 @@ class Alarm(Service):
         self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
         self.is_awake = True
         self.wake_up_times = {}
-        self.alarm_triggered = False
+        # set this to true so the alarm does not trigger at first startup.
+        self.alarm_triggered = True
         self.alarm_stream = None
+        self.alarm_enabled = False
         self.pa = None
         self.service_started = False
 
     def start_service(self):
         self.screen_service = self.service_handler.get_service('screen')
+        builder = self.service_handler.get_service('builder')
+        self.alarm_icon = builder.get_object("alarm")
         if(self.settings["modules"]["alarm"]):
             self.wake_up_times = self.get_wake_up_times()
+            self.alarm_enabled = True
+            self.set_alarm(True)
             if("soundfile" in self.settings["alarm"]):
                 self.sound_file = self.settings["alarm"]["soundfile"]
+        else:
+            self.set_alarm(False)
         self.service_started = True
     
     def get_wake_up_times(self):
@@ -45,7 +53,7 @@ class Alarm(Service):
             wake_up_time = self.get_wake_up_times()[now.strftime("%A")]
             if(wake_up_time != False):
                 parsed_time = datetime.datetime.strptime(wake_up_time, "%H:%M:%S").replace(year=now.year, month=now.month, day=now.day)
-                if(now > parsed_time):
+                if(now > parsed_time and self.alarm_enabled):
                     if (self.alarm_triggered == False):
                         self.screen_service.wake_screen()
                         self.alarm_triggered = True
@@ -97,4 +105,17 @@ class Alarm(Service):
             self.pa.terminate()
         # function is called by Glib.timeout_add. Return false so the function is not called again.
         return False
+    
+    def set_alarm(self, enabled = None):
+        if(enabled == None):
+            enabled = not self.alarm_enabled
+
+        if(enabled):
+            # set this to true so the alarm does not start as soon as it is enabled.
+            self.alarm_triggered = True
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.alarm_icon.show)
+        else:
+            Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.alarm_icon.hide)
+
+        self.alarm_enabled = enabled
     

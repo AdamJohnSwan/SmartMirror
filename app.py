@@ -19,8 +19,8 @@ class SmartMirror:
 
 		#Hide the cursor
 		display = Gdk.Display.get_default()
-		cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
-		Gdk.get_default_root_window().set_cursor(cursor)
+		#cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+		#Gdk.get_default_root_window().set_cursor(cursor)
 
 		self.service_handler = create_service_handler(builder)
 

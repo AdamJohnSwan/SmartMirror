@@ -69,6 +69,7 @@ class Snooze(Service):
             self.snooze_times[6] = string_to_interval(settings["Sunday"])
 
     def check_for_snooze(self):
+        import pdb; pdb.set_trace()
         now = datetime.now()
         seconds = ((now.hour * 60 * 60) + (now.minute * 60) + now.second)
         snooze_time = self.snooze_times[now.weekday()]
