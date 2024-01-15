@@ -13,7 +13,6 @@ class Alarm(Service):
     def __init__(self, service_handler):
         self.service_handler = service_handler
         self.settings = get_settings()
-        self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
         self.is_awake = True
         self.wake_up_times = {}
         # set this to true so the alarm does not trigger at first startup.

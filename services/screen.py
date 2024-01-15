@@ -33,27 +33,17 @@ class Screen(Service):
         except Exception as e:
             print("Device does not support CEC: " + str(e))
 
-        self.start_sleep_timer()
-
-    def start_sleep_timer(self):
-        self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
-        self.sleep_timer_check()
+        GLib.timeout_add_seconds(20, self.sleep_timer_check)
 
     def sleep_timer_check(self):
-        try:
-            if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
-                self.sleep_screen()
-            else:
-                GLib.timeout_add_seconds(20, self.sleep_timer_check)
-        finally:
-            # return false so the old timeout gets removed.
-            return False
+        if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
+            self.sleep_screen()
         
     def wake_screen(self):
 		# if the mirror is snoozing then ask the user if they really want to turn it on
         if (self.is_awake == False and self.settings["modules"]["snooze"]):
             self.snooze_service.check_for_snooze()
-
+        self.sleep_timer = datetime.datetime.now() + datetime.timedelta(minutes=self.settings["screentimeout"])
         Gdk.threads_add_idle(GLib.PRIORITY_DEFAULT_IDLE, self.wrapper.set_opacity, 1)
         if(self.tv is not None):
             self.tv.power_on()
