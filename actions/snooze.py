@@ -69,19 +69,21 @@ class Snooze(Service):
             self.snooze_times[6] = string_to_interval(settings["Sunday"])
 
     def check_for_snooze(self):
-        import pdb; pdb.set_trace()
         now = datetime.now()
         seconds = ((now.hour * 60 * 60) + (now.minute * 60) + now.second)
         snooze_time = self.snooze_times[now.weekday()]
+        is_in_snooze = True
         if (snooze_time.start > snooze_time.end):
             # start is greater than end which means that the end time is the next day.
             if (seconds < snooze_time.start and seconds > snooze_time.end):
-                return
+                is_in_snooze = False
         else:
-            if (seconds > snooze_time.start and seconds < snooze_time.end):
-                return
-        # if neither of these if-statements pass then the mirror is in snooze mode.
-        self.check_for_wakeup()
+            if (seconds < snooze_time.start or seconds > snooze_time.end):
+                is_in_snooze = False
+        if is_in_snooze:
+            self.check_for_wakeup()
+        elif not is_in_snooze and self.is_checking_for_wakeup: # edge-case where the mirror is prompting the user when snooze time ends.
+            self.end_check_for_wakeup()
     
     def check_for_wakeup(self):
         self.is_checking_for_wakeup = True
@@ -94,6 +96,7 @@ class Snooze(Service):
     def check_for_wakeup_timeout(self):
         if self.is_checking_for_wakeup:
             self.screen_service.sleep_screen()
+            self.is_checking_for_wakeup = False
             if (self.content != None):
                 self.stack.set_visible_child(self.content)
 
