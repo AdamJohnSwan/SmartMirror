@@ -38,6 +38,7 @@ class Screen(Service):
     def sleep_timer_check(self):
         if(datetime.datetime.now() > self.sleep_timer and self.is_awake):
             self.sleep_screen()
+        return True
         
     def wake_screen(self):
 		# if the mirror is snoozing then ask the user if they really want to turn it on
